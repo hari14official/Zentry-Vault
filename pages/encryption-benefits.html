@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encryption Benefits - Zentry Vault</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#030305',
+                        accent: '#4f8ef5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; margin: 0; overflow-x: hidden; }
+        
+        .glass-nav { 
+            background: rgba(3, 3, 5, 0.85); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        .logo-hover { transition: transform 0.2s ease; cursor: pointer; }
+        .logo-hover:hover { transform: translateY(-1px); }
+
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+
+        .benefit-section {
+            padding: 80px 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .benefit-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 2rem;
+        }
+
+        .benefit-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #475569;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .illustration-container {
+            margin-bottom: 3rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        .illustration-img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 12px;
+        }
+
+        footer {
+            background-color: #051120;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-[#f8fafc] antialiased">
+
+    <!-- Transparent Sticky Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center text-white">
+            <!-- Logo -->
+            <a href="../index.html" class="flex items-center gap-3 text-2xl font-bold logo-hover">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </a>
+            
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex gap-8">
+                <a href="index.html#home" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" id="nav-dashboard" class="nav-link-anim text-sm font-medium hidden">Dashboard</a>
+                <a href="index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                                <a href="contact-us.html" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+
+            <!-- Authentication Buttons -->
+            <div class="flex items-center gap-5" id="auth-buttons">
+                <a href="signin.html" class="text-white text-sm font-semibold btn-signin-anim">Sign in</a>
+                <a href="create-account.html" class="bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold btn-signup-anim">Sign up</a>
+            </div>
+            <!-- Logout Button (Hidden by default) -->
+            <div class="flex items-center gap-5 hidden" id="user-menu">
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32">
+        <!-- Section 1 (from Image 1) -->
+        <section class="benefit-section border-b border-gray-100">
+            <div class="illustration-container">
+                <img src="../assets/images/encryption_advantages_monitor.png" alt="Advantages of Encryption" class="illustration-img max-w-lg">
+            </div>
+            <h1 class="benefit-title">Advantages of Using Encryption</h1>
+            <div class="benefit-text">
+                <p class="mb-6">When using the Internet, most people know to use encryption of data in transit. This is the big difference between HTTP and HTTPS traffic i.e. whether or not the lock icon shows up in the address bank. HTTPS helps to ensure that you're connected to the right website and that no one can eavesdrop on your connection, which may include personal data like credit card information, your Netflix queue, etc.</p>
+                <p class="mb-6">However, your personal data isn't only at risk when it's traveling over the Internet. Despite your best efforts, there is a chance that your computer will be infected with malware that your antivirus doesn't catch. If this is the case, the malware may start looking for sensitive data on your computer and send it to the cyber-criminal running the malware.</p>
+                <p>This is where file encryption comes in. Instead of just encrypting data in transit, file encryption ensures that data is stored encrypted on your computer. This means that an attacker or malware with access to your computer can't read your sensitive data unless they also know your password.</p>
+            </div>
+
+            <div class="illustration-container mt-20">
+                <img src="../assets/images/privacy_and_identity_protection.png" alt="Privacy Protection" class="illustration-img max-w-lg">
+            </div>
+            <h2 class="benefit-title">Encryption protects your privacy</h2>
+            <div class="benefit-text">
+                <p class="mb-6">The most common argument against implementing good cybersecurity practices is "I don't have any data worth stealing". However, this statement is incorrect, and cybercriminals commonly target individuals to steal personal data.</p>
+                <p class="mb-6">When thinking about your personal data, you might focus on credit card and banking information, which is primarily entered into the browser and not stored on the machine. A great deal of personal data can be extracted from files that you may store on your computer without thinking twice about them. Some examples of these files include:</p>
+                <ul class="list-disc pl-6 space-y-4">
+                    <li><strong>Tax Return Documents:</strong> Most tax preparation software provides an option to store a copy of the return on your computer. A full tax return provides an attacker with all of the information that they require to perform identity theft. Similarly, W2s, 1099s, and other common forms can contain sensitive data.</li>
+                    <li><strong>Family Photos:</strong> By default, many cameras and smartphones will embed location information in photos, which is why your computer can tell where and when the photo is taken. A picture of a backyard barbeque can reveal a home address...</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Section 2 (from Image 2) -->
+        <section class="benefit-section border-b border-gray-100 bg-blue-50/30">
+            <div class="illustration-container">
+                <img src="../assets/images/privacy_and_identity_protection.png" alt="Identity Protection" class="illustration-img max-w-lg">
+            </div>
+            <h2 class="benefit-title">Encryption Protects you and your Identity</h2>
+            <div class="benefit-text">
+                <p class="mb-6">At this point we all know what ransomware is and the effect it can have on you or your business (if you don't know, head over to your favourite news channel and peruse the technology section). But what is not so well known is the latest "trendy" way in which cybercriminals are using ransomware to blackmail you into paying ransoms.</p>
+                <p class="mb-6">The latest trend in ransomware is to bypass the encryption of your files and instead, steal all your data which is then used to blackmail you into paying a ransom. If you do not pay-up, your data is leaked on the Internet, used for identity theft or just sold to the highest bidder.</p>
+                <p>Encrypting your files is a critical part of your defense against cybercriminal attacks, including ransomware. When your files are encrypted, criminals cannot access your data. Instead, they can only see a scrambled nonsense (random letters, numbers and symbols) which is useless to them and therefore cannot be used for extortion or to hold you to ransom.</p>
+                <p class="mt-6 text-accent font-semibold cursor-pointer hover:underline text-center">See how file encryption can help defend against ransomware</p>
+            </div>
+
+            <div class="illustration-container mt-20">
+                <img src="../assets/images/cloud_data_encryption_icons.png" alt="Cloud Data Encryption" class="illustration-img max-w-md">
+            </div>
+            <h2 class="benefit-title">Encryption protects your Cloud data</h2>
+            <div class="benefit-text">
+                <p class="mb-6">If you store your files and data on a Cloud backup platform such as OneDrive, Google Drive or Dropbox, you may be concerned that your cloud provider has the master encryption key to access your data. Your fears are not unfounded. A quick search on DuckDuckGo and you'll quickly find statements such as the following from Dropbox:</p>
+                <blockquote class="italic text-gray-500 border-l-4 border-accent pl-4 mb-6">"To enforce our Terms of Service and Acceptable Use Policy, Access to users' file content is limited to a small number of people. We have strict policy and technical access controls that prohibit access to file content except in these rare circumstances." <span class="text-accent cursor-pointer italic hover:underline">Link here</span></blockquote>
+                <p class="mb-6">Rare circumstances? What does that even mean? I don't know what constitutes a rare circumstance within Dropbox, but what I can tell you is this. Dropbox absolutely have the ability to read your files.</p>
+                <p class="mb-6 font-bold">The best way to protect your Cloud data is encryption.</p>
+                <p>When you encrypt your cloud files and data, it stops your cloud provider from accessing them, even if they are forced by the government, the FBI or aliens. Why? Because your data is encrypted with your key, not theirs. So on those "rare occasions" when they attempt to access your data, access is denied!</p>
+            </div>
+        </section>
+
+        <!-- Section 3 (from Image 3) -->
+        <section class="benefit-section border-b border-gray-100">
+            <div class="illustration-container">
+                <img src="../assets/images/secure_file_sharing_illustration.png" alt="Secure File Sharing" class="illustration-img max-w-lg">
+            </div>
+            <h2 class="benefit-title">Encryption allows you to securely share your files</h2>
+            <div class="benefit-text">
+                <p class="mb-6">Sharing files online is more popular than ever. You do it on social media like Facebook, on messenger apps, forums, and cloud services. But what's the risk? Only the people I've sent the file can see it, right? Wrong!</p>
+                <p class="mb-6">If your shared files are not encrypted, they're accessible to everyone. Imagine the devastation of finding your private pictures or bank number scattered across the web...</p>
+                <p class="mb-6">The reason why it is important to encrypt files before sharing is simple — encrypting your files ensures your privacy. Someone unauthorized can’t open the files, meaning only your intended recipient gets access.</p>
+                <div class="p-6 bg-emerald-50 border border-emerald-100 rounded-lg">
+                    <p class="text-emerald-800 font-semibold mb-2 flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z"></path></svg>
+                        Product plug alert!
+                    </p>
+                    <p class="text-emerald-700">With GhostVault, you can securely share your files with friends, family, customers or whoever. Share via the cloud, email, messenger or any other sharing app. It's up to you.</p>
+                </div>
+            </div>
+
+            <div class="illustration-container mt-20">
+                <img src="../assets/images/lost_stolen_device_protection.png" alt="Lost or Stolen Devices" class="illustration-img max-w-lg">
+            </div>
+            <h2 class="benefit-title">Encryption protects Lost/Stolen Devices</h2>
+            <div class="benefit-text">
+                <p class="mb-6">Employees are increasingly using mobile devices for work. This trend has become more common in recent years, and the COVID-19 pandemic created an explosion in telework and the use of personal and mobile devices.</p>
+                <p class="mb-6">With the increased convenience of these mobile devices comes higher cybersecurity risk. A smartphone, tablet, or laptop is relatively easy to lose or have stolen in a public place. If this occurs, the thief may be able to read sensitive company data off of the device by scanning its hard drive.</p>
+                <p>File encryption protects against the threat of lost or stolen mobile devices. Each file on the machine is encrypted, and the encryption keys are stored protected by the user's password. If an attacker doesn't have access to this password, then they can't read any useful data off of the stolen device.</p>
+            </div>
+        </section>
+
+        <!-- Section 4 (from Image 4) -->
+        <section class="benefit-section bg-blue-50/20">
+            <div class="illustration-container">
+                <img src="../assets/images/encryption_solution_desk_working.png" alt="What to Look For" class="illustration-img max-w-lg">
+            </div>
+            <h2 class="benefit-title">What to Look For in a File Encryption Solution</h2>
+            <div class="benefit-text">
+                <p class="mb-10">File encryption is a valuable tool for data security. However, implemented improperly, it can lull you into a false sense of security. Some vital features to look for in a file encryption solution include:</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-gray-800">The Encryption Algorithm</h4>
+                        <p class="text-sm">A lot of encryption products use such terms as 'Military-graded', 'Bank-level' or other marketing phrases which on paper sound really impressive, but let's get real here, who actually knows what encryption algorithms the military use? Looking beyond those marketing phrases and claims, you'll want industry standard, unmodified AES encryption, preferably, independently audited.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-gray-800">The Keys to your Files</h4>
+                        <p class="text-sm">Some encryption solutions use a single key to encrypt all your files and data, but this forces an ‘all or nothing’ approach and puts all your data at risk should your key fall into the wrong hands. A good file encryption solution should encrypt each folder or file with a unique key which minimizes the risk of all your data being breached should a key be hacked or stolen. Additionally, if you suspect a key has been compromised, your encryption solution should allow you to change all your file keys with ease.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-gray-800">Always-on encryption</h4>
+                        <p class="text-sm">Your files should be encrypted at ALL times and when editing, any changes should automatically be saved and encrypted.</p>
+                    </div>
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-gray-800">Secure sharing</h4>
+                        <p class="text-sm">Your encryption solution should allow you to easily share encrypted copies of your files to any recipient. Shared files should only be accessible by you and your recipients.</p>
+                    </div>
+                </div>
+                                <a href="file-encryption.html" class="mt-12 text-accent font-semibold cursor-pointer hover:underline text-center block">Learn more about file encryption</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#051120] text-[#94a3b8] pt-12 pb-6 px-6 relative border-t border-white/5">
+        <div class="w-full px-2 lg:px-12 xl:px-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-6 text-left">
+            <!-- Connecting column with replaced SVGs -->
+            <div class="lg:border-r border-white/5 pr-4 flex flex-col gap-4">
+                <h4 class="text-white font-semibold tracking-wide uppercase text-xs">Connect with us</h4>
+                <div class="flex gap-2">
+                    <!-- GitHub -->
+                    <a href="https://github.com/hari14official" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+                    <!-- LinkedIn -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <!-- Gmail -->
+                    <a href="mailto:hari14official@gmail.com" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+                    <!-- Message -->
+                    <a href="https://wa.me/6383220503" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.407 2.438 1.097 3.393l-.719 2.628 2.689-.705c.915.589 1.998.932 3.167.932 3.181 0 5.767-2.586 5.767-5.767s-2.586-5.767-5.767-5.767zm3.385 8.181c-.131.37-.751.713-1.041.758-.291.045-.568.083-1.619-.341-1.288-.521-2.119-1.83-2.183-1.916-.064-.086-.522-.69-.522-1.318 0-.628.329-.937.447-1.062.118-.125.258-.156.344-.156s.172.001.246.004c.078.003.184-.03.288.223.107.26.368.896.4 1.01.032.114.054.246-.021.397-.076.151-.114.246-.227.378-.113.132-.238.293-.341.393-.114.111-.234.231-.101.459.133.228.591.974 1.269 1.579.873.777 1.611 1.018 1.84 1.132.229.114.363.096.5-.06.136-.156.589-.685.746-.919.157-.234.314-.196.53-.117.216.079 1.369.646 1.605.764.236.118.393.176.45.27.057.094.057.546-.074.918zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></a>
+                </div>
+            </div>
+            <!-- Col Company -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                                        <li><a href="contact-us.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
+                </ul>
+            </div>
+            <!-- Col Tools -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Password generator</a></li>
+                </ul>
+            </div>
+            <!-- Col Use Cases -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Use cases</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encryption-benefits.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Encryption benefits</a></li>
+                    <li><a href="file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">File encryption</a></li>
+                </ul>
+            </div>
+            <!-- Col Resources -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Learning resources</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="why-file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Why file encryption?</a></li>
+                                        <li><a href="ransomware-protection.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Protection</a></li>
+                    
+                </ul>
+            </div>
+            <!-- Col Legal -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Legal</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="privacy-notice.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Privacy notice</a></li>
+                                        <li><a href="terms-and-conditions.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Terms and Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="w-full px-2 lg:px-12 xl:px-20 mt-8 pt-4 border-t border-white/10 text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            © 2025-2026 Copyright: Zentry Vault Ltd
+        </div>
+    </footer>
+
+    <script>
+        // ----------------------------------------------------
+        // Auth Logic Integration
+        // ----------------------------------------------------
+        const isSignedIn = localStorage.getItem('signedIn') === 'true';
+
+        if (isSignedIn) {
+            const navDashboard = document.getElementById('nav-dashboard');
+            if(navDashboard) navDashboard.classList.remove('hidden');
+            
+            const authBtns = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            if(authBtns) authBtns.classList.add('hidden');
+            if(userMenu) userMenu.classList.remove('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('signedIn');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

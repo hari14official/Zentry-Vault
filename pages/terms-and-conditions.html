@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Terms of Use - Zentry Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#030305',
+                        accent: '#4f8ef5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030305; color: white; margin: 0; overflow-x: hidden; }
+        .glass-nav { 
+            background: rgba(3, 3, 5, 0.4); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .logo-hover { transition: transform 0.2s ease; cursor: pointer; }
+        .logo-hover:hover { transform: translateY(-1px); }
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+        
+        .legal-content { color: #334155; line-height: 1.7; font-size: 0.95rem; }
+        .legal-content h2 { color: #1e293b; font-weight: 700; margin-top: 2.5rem; margin-bottom: 1.25rem; font-size: 1.5rem; }
+        .legal-content p { margin-bottom: 1.25rem; }
+        .legal-content ul { margin-bottom: 1.5rem; list-style: none; padding-left: 0; }
+        .legal-content li { margin-bottom: 0.75rem; position: relative; padding-left: 1.5rem; }
+        .legal-content li::before {
+            content: '•'; position: absolute; left: 0; color: #4f8ef5; font-weight: bold;
+        }
+    </style>
+</head>
+<body class="bg-white antialiased text-gray-800">
+
+    <!-- Transparent Sticky Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center text-white">
+            <div class="flex items-center gap-3 text-2xl font-bold logo-hover" onclick="window.location.href='../index.html'">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </div>
+            <nav class="hidden md:flex gap-8">
+                <a href="index.html#home" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" id="nav-dashboard" class="nav-link-anim text-sm font-medium hidden">Dashboard</a>
+                <a href="index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                                <a href="contact-us.html" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+            <div class="flex items-center gap-5 text-white" id="auth-buttons">
+                <a href="signin.html" class="text-white text-sm font-semibold hover:text-gray-300">Sign in</a>
+                <a href="create-account.html" class="bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-gray-200">Sign up</a>
+            </div>
+            <div class="flex items-center gap-5 hidden text-white" id="user-menu">
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Header Hero Section -->
+    <section class="pt-32 pb-16 bg-[#0a1118] text-center px-6">
+        <div class="max-w-4xl mx-auto mt-10 text-white">
+            <h1 class="text-3xl md:text-4xl font-bold mb-4 tracking-tight">Terms of use</h1>
+            <p class="text-sm text-gray-400 opacity-80">Last update: March 20, 2026</p>
+        </div>
+    </section>
+
+    <!-- Content Blocks -->
+    <main class="py-16 px-6 max-w-5xl mx-auto legal-content">
+        <section>
+            <h2>General Information</h2>
+            <p>We collect the email addresses of those who communicate with us via e-mail, aggregate information on what pages consumers access or visit, and information volunteered by the consumer (such as survey information and/or site registrations). The information we collect is used to improve the content of our Web pages and the quality of our service, and is not shared with or sold to other organizations for commercial purposes, except to provide products or services you've requested, when we have your permission, or under the following circumstances:</p>
+            <ul>
+                <li>It is necessary to share information in order to investigate, prevent, or take action regarding illegal activities, suspected fraud, situations involving potential threats to the physical safety of any person, violations of Terms of Service, or as otherwise required by law.</li>
+                <li>We transfer information about you if Zentry Vault is acquired by or merged with another company. In this event, Zentry Vault will notify you before information about you is transferred and becomes subject to a different privacy policy.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Information Gathering and Usage</h2>
+            <ul>
+                <li>When you register for Zentry Vault we ask for information such as your name, email address, billing address, credit card information. Members who sign up for the free account are not required to enter a credit card.</li>
+                <li>Zentry Vault uses collected information for the following general purposes: products and services provision, billing, identification and authentication, services improvement, contact, and research.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Cookies</h2>
+            <ul>
+                <li>A cookie is a small amount of data, which often includes an anonymous unique identifier, that is sent to your browser from a web site's computers and stored on your computer's hard drive.</li>
+                <li>Cookies are required to use the Zentry Vault service.</li>
+                <li>We use cookies to record current session information, but do not use permanent cookies. You are required to re-login to your Zentry Vault account after a certain period of time has elapsed to protect you against others accidentally accessing your account contents.</li>
+            </ul>
+        </section>
+
+        <section>
+            <h2>Data Storage</h2>
+            <p>Zentry Vault uses third party vendors and hosting partners to provide the necessary hardware, software, networking, storage, and related technology required to run Zentry Vault. Although Zentry Vault owns the code, databases, and all rights to the Zentry Vault application, you retain all rights to your data.</p>
+        </section>
+
+        <section>
+            <h2>Disclosure</h2>
+            <p>Zentry Vault may disclose personally identifiable information under special circumstances, such as to comply with subpoenas or when your actions violate the Terms of Service.</p>
+        </section>
+
+        <section>
+            <h2>Changes</h2>
+            <p>Zentry Vault may periodically update this policy. We will notify you about significant changes in the way we treat personal information by sending a notice to the primary email address specified in your Zentry Vault primary account holder account or by placing a prominent notice on our site. Such notice will be given at least 3 days in advance of the date the new policy will be applied.</p>
+        </section>
+
+        <section>
+            <h2>Question</h2>
+            <p>Any questions about this Privacy Policy should be addressed to privacy@zentryvault.com.</p>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#051120] text-[#94a3b8] pt-12 pb-6 px-6 relative border-t border-white/5">
+        <div class="w-full px-2 lg:px-12 xl:px-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-6 text-left">
+            <div class="lg:border-r border-white/5 pr-4 flex flex-col gap-4">
+                <h4 class="text-white font-semibold tracking-wide uppercase text-xs">Connect with us</h4>
+                <div class="flex gap-2">
+                    <a href="https://github.com/hari14official" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <a href="mailto:hari14official@gmail.com" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+                    <a href="https://wa.me/6383220503" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.407 2.438 1.097 3.393l-.719 2.628 2.689-.705c.915.589 1.998.932 3.167.932 3.181 0 5.767-2.586 5.767-5.767s-2.586-5.767-5.767-5.767zm3.385 8.181c-.131.37-.751.713-1.041.758-.291.045-.568.083-1.619-.341-1.288-.521-2.119-1.83-2.183-1.916-.064-.086-.522-.69-.522-1.318 0-.628.329-.937.447-1.062.118-.125.258-.156.344-.156s.172.001.246.004c.078.003.184-.03.288.223.107.26.368.896.4 1.01.032.114.054.246-.021.397-.076.151-.114.246-.227.378-.113.132-.238.293-.341.393-.114.111-.234.231-.101.459.133.228.591.974 1.269 1.579.873.777 1.611 1.018 1.84 1.132.229.114.363.096.5-.06.136-.156.589-.685.746-.919.157-.234.314-.196.53-.117.216.079 1.369.646 1.605.764.236.118.393.176.45.27.057.094.057.546-.074.918zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></a>
+                </div>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                                        <li><a href="contact-us.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Password generator</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Use cases</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encryption-benefits.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Encryption benefits</a></li>
+                    <li><a href="file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">File encryption</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Learning resources</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="why-file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Why file encryption?</a></li>
+                    <li><a href="ransomware-protection.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Protection</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Legal</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="privacy-notice.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Privacy notice</a></li>
+                    <li><a href="terms-and-conditions.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Terms and Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="w-full px-2 lg:px-12 xl:px-20 mt-8 pt-4 border-t border-white/10 text-xs font-semibold tracking-widest text-gray-500 uppercase text-left">
+            © 2025-2026 Copyright: Zentry Vault Ltd
+        </div>
+    </footer>
+
+    <script>
+        const isSignedIn = localStorage.getItem('signedIn') === 'true';
+        if (isSignedIn) {
+            const navDashboard = document.getElementById('nav-dashboard');
+            if(navDashboard) navDashboard.classList.remove('hidden');
+            const authBtns = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            if(authBtns) authBtns.classList.add('hidden');
+            if(userMenu) userMenu.classList.remove('hidden');
+        }
+        function logout() {
+            localStorage.removeItem('signedIn');
+            window.location.reload();
+        }
+    </script>
+</body>
+</html>

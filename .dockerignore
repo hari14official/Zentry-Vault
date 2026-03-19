@@ -1,0 +1,8 @@
+.git
+.vscode
+__pycache__
+*.pyc
+.env
+.antigravityignore
+node_modules
+.DS_Store

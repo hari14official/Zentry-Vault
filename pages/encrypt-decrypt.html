@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypt / Decrypt - Zentry Vault</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="../assets/js/firebase-config.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#1a1a1a', // closer to image 1 background
+                        panelBg: '#2a2a2a', // panel background
+                        inputBg: '#333333', // input background
+                        accent: '#4f8ef5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #e5e5e5; margin: 0; overflow-x: hidden; }
+        .glass-nav { 
+            background: rgba(26, 26, 26, 0.8); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #1a1a1a; }
+        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        .header-title { font-weight: normal; font-size: 2.25rem; line-height: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; margin-top: 1rem; width: 100%; border-bottom: none; }
+        
+        /* Inputs styling like the image */
+        .cyber-input {
+            width: 100%;
+            background-color: #333333;
+            color: #d4d4d4;
+            border: 1px solid transparent; /* invisible border usually until focus */
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .cyber-textarea {
+            width: 100%;
+            background-color: #333333;
+            color: #d4d4d4;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 13px;
+            font-family: inherit; /* using standard sans or mono */
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.2s;
+        }
+        .cyber-textarea:focus, .cyber-input:focus {
+            border-color: #555;
+            background-color: #3a3a3a;
+        }
+        .cyber-label {
+            display: block;
+            font-size: 13px;
+            color: #e5e5e5;
+            margin-bottom: 6px;
+            margin-top: 16px;
+        }
+        .cyber-label:first-child { margin-top: 0; }
+        
+        .input-group { position: relative; }
+        .input-clear { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); cursor: pointer; color: #a1a1aa; font-size: 14px; }
+        .input-clear:hover { color: #fff; }
+        
+        .resize-icon { position: absolute; bottom: 8px; right: 8px; pointer-events: none; color: #737373; opacity: 0.5; }
+    </style>
+</head>
+<body class="bg-background text-white antialiased">
+    <!-- Transparent Sticky Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-3 text-2xl font-bold cursor-pointer hover:transform hover:-translate-y-[1px] transition-transform">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </div>
+            
+            <nav class="hidden md:flex gap-8">
+                <a href="../index.html" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" class="nav-link-anim active text-sm font-medium">Dashboard</a>
+                <a href="index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                <a href="#" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+
+            <div class="flex items-center gap-5">
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="pt-32 pb-20 min-h-screen px-6 md:px-12 xl:px-32 max-w-[1400px] mx-auto">
+        <!-- Header text area -->
+        <div class="max-w-4xl mx-auto flex flex-col items-center text-center border-b border-white/10 mb-8 pb-4">
+            <div class="header-title text-gray-200 justify-center">
+                <span>Encrypt / Decrypt Text</span>
+                <div onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
+                    <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </div>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl mb-8">
+                Encrypt clear text and decrypt ciphertext using crypto algorithms like AES, TripleDES, Rabbit or RC4.
+            </p>
+            
+            <div class="flex gap-4 mb-4">
+                <button id="btn-show-encrypt" class="bg-inputBg hover:bg-[#444] border border-gray-500 text-white px-6 py-2 rounded transition-all font-semibold">Encrypt</button>
+                <button id="btn-show-decrypt" class="bg-inputBg hover:bg-[#444] border border-gray-700 text-gray-400 hover:text-white px-6 py-2 rounded transition-all font-semibold">Decrypt</button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 w-full max-w-4xl mx-auto items-start">
+            
+            <!-- ENCRYPT PANEL -->
+            <div id="panel-encrypt" class="bg-panelBg rounded-md p-6 border border-transparent w-full">
+                <h3 class="font-bold text-white mb-6">Encrypt</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Your text or file -->
+                    <div class="md:col-span-1">
+                        <label for="enc-text" class="cyber-label">Your text or file:</label>
+                        <div class="relative mb-2">
+                            <textarea id="enc-text" class="cyber-textarea font-mono" placeholder="Enter text here..." spellcheck="false"></textarea>
+                            <svg class="resize-icon w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><path d="M10 0v10H0L10 0z" opacity="0.5"/></svg>
+                        </div>
+                        <div id="drop-zone" class="relative group border-2 border-dashed border-gray-700 rounded-lg p-4 transition-all hover:border-emerald-500/50 hover:bg-emerald-500/5 cursor-pointer">
+                            <input type="file" id="enc-file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                            <div class="text-center">
+                                <svg class="w-8 h-8 mx-auto text-gray-500 group-hover:text-emerald-500 transition-colors mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                </svg>
+                                <p class="text-xs text-gray-400 group-hover:text-gray-300">Drag & drop or <span class="text-emerald-500 font-semibold">browse</span></p>
+                                <p id="file-name" class="text-[10px] text-gray-500 mt-1 truncate px-2"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Secret key and Algorithm -->
+                    <div class="md:col-span-1 flex flex-col justify-start">
+                        <div class="flex justify-between items-end mb-1.5">
+                            <label class="cyber-label !mb-0">Your secret key:</label>
+                            <button onclick="fillGeneratedKeys('enc')" class="text-[10px] bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 px-2 py-0.5 rounded hover:bg-emerald-500 hover:text-white transition-all uppercase font-bold tracking-wider">Generate Keys</button>
+                        </div>
+                        <div id="enc-single-key-container" class="input-group">
+                            <input type="text" id="enc-key" class="cyber-input pr-8" value="my secret key" spellcheck="false">
+                            <span class="input-clear" onclick="document.getElementById('enc-key').value=''">×</span>
+                        </div>
+                        
+                        <!-- Triple Key Inputs (Hidden by default) -->
+                        <div id="enc-triple-key-container" class="space-y-2 hidden">
+                            <div class="input-group">
+                                <input type="text" id="enc-key-1" class="cyber-input pr-8" placeholder="Key 1" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('enc-key-1').value=''">×</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="enc-key-2" class="cyber-input pr-8" placeholder="Key 2" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('enc-key-2').value=''">×</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="enc-key-3" class="cyber-input pr-8" placeholder="Key 3" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('enc-key-3').value=''">×</span>
+                            </div>
+                        </div>
+                        
+                        <label class="cyber-label">Encryption algorithm:</label>
+                        <div class="relative">
+                            <select id="enc-algo" class="cyber-input appearance-none cursor-pointer" onchange="handleAlgoChange('enc')">
+                                <option>AES</option>
+                                <option>TripleDES</option>
+                                <option>Rabbit</option>
+                                <option>RC4</option>
+                            </select>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons and Result -->
+                    <div class="md:col-span-2 mt-4 space-y-4">
+                        <button onclick="startEncryptProcess()" class="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-3 rounded-md transition-colors shadow-lg">Encrypt</button>
+                        
+                        <!-- Encrypted Result (Hidden until OTP is verified) -->
+                        <div id="enc-result-container" class="hidden border border-[#2e2e30] rounded-md p-4 bg-[#1e1e20] relative">
+                            <label class="cyber-label font-bold text-emerald-400">Encrypted Output:</label>
+                            <textarea id="enc-result" class="cyber-textarea font-mono text-gray-300 mt-2 mb-4" spellcheck="false" readonly></textarea>
+                            
+                            <button onclick="showShareModal()" class="w-full border border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white font-semibold py-2 rounded transition-colors flex justify-center items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                                Share Encrypted Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DECRYPT PANEL -->
+            <div id="panel-decrypt" class="bg-panelBg rounded-md p-6 border border-transparent hidden w-full">
+                <h3 class="font-bold text-white mb-6">Decrypt</h3>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <!-- Your encrypted text -->
+                    <div class="md:col-span-1">
+                        <label class="cyber-label">Your encrypted text:</label>
+                        <div class="relative">
+                            <textarea id="dec-text" class="cyber-textarea font-mono" spellcheck="false"></textarea>
+                            <svg class="resize-icon w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><path d="M10 0v10H0L10 0z" opacity="0.5"/></svg>
+                        </div>
+                    </div>
+                    
+                    <!-- Secret key and Algorithm -->
+                    <div class="md:col-span-1 flex flex-col justify-start">
+                        <div class="flex justify-between items-end mb-1.5">
+                            <label class="cyber-label !mb-0">Your secret key:</label>
+                            <button onclick="fillGeneratedKeys('dec')" class="text-[10px] bg-blue-500/10 text-blue-500 border border-blue-500/20 px-2 py-0.5 rounded hover:bg-blue-500 hover:text-white transition-all uppercase font-bold tracking-wider">Generate Keys</button>
+                        </div>
+                        <div id="dec-single-key-container" class="input-group">
+                            <input type="text" id="dec-key" class="cyber-input pr-8" value="my secret key" spellcheck="false">
+                            <span class="input-clear" onclick="document.getElementById('dec-key').value=''">×</span>
+                        </div>
+                        
+                        <!-- Triple Key Inputs (Hidden by default) -->
+                        <div id="dec-triple-key-container" class="space-y-2 hidden">
+                            <div class="input-group">
+                                <input type="text" id="dec-key-1" class="cyber-input pr-8" placeholder="Key 1" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('dec-key-1').value=''">×</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="dec-key-2" class="cyber-input pr-8" placeholder="Key 2" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('dec-key-2').value=''">×</span>
+                            </div>
+                            <div class="input-group">
+                                <input type="text" id="dec-key-3" class="cyber-input pr-8" placeholder="Key 3" spellcheck="false">
+                                <span class="input-clear" onclick="document.getElementById('dec-key-3').value=''">×</span>
+                            </div>
+                        </div>
+                        
+                        <label class="cyber-label">Encryption algorithm:</label>
+                        <div class="relative">
+                            <select id="dec-algo" class="cyber-input appearance-none cursor-pointer" onchange="handleAlgoChange('dec')">
+                                <option>AES</option>
+                                <option>TripleDES</option>
+                                <option>Rabbit</option>
+                                <option>RC4</option>
+                            </select>
+                            <div class="absolute right-3 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons and Result -->
+                    <div class="md:col-span-2 mt-4 space-y-4">
+                        <button onclick="startDecryptProcess()" class="w-full bg-[#3b82f6] hover:bg-blue-600 text-white font-bold py-3 rounded-md transition-colors shadow-lg">Decrypt</button>
+                        
+                        <div id="dec-result-container" class="hidden border border-[#2e2e30] rounded-md p-4 bg-[#1e1e20]">
+                            <label class="cyber-label font-bold text-blue-400">Your decrypted text:</label>
+                            <div class="relative mt-2">
+                                <textarea id="dec-result" class="cyber-textarea font-mono text-gray-300" placeholder="Decrypted preview" spellcheck="false" readonly></textarea>
+                                <svg class="resize-icon w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><path d="M10 0v10H0L10 0z" opacity="0.5"/></svg>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#051120] text-[#94a3b8] pt-12 pb-6 px-6 relative border-t border-white/5">
+        <div class="w-full px-2 lg:px-12 xl:px-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-6 text-left">
+            <!-- Connecting column with replaced SVGs -->
+            <div class="lg:border-r border-white/5 pr-4 flex flex-col gap-4">
+                <h4 class="text-white font-semibold tracking-wide uppercase text-xs">Connect with us</h4>
+                <div class="flex gap-2">
+                    <!-- GitHub -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+                    <!-- LinkedIn -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <!-- Gmail -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"/></svg></a>
+                    <!-- Message -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg></a>
+                </div>
+            </div>
+            <!-- Col Company -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                    <li><a href="#" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
+                </ul>
+            </div>
+            <!-- Col Tools -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Password generator</a></li>
+                </ul>
+            </div>
+            <!-- Col Use Cases -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Use cases</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encryption-benefits.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Encryption benefits</a></li>
+                    <li><a href="file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">File encryption</a></li>
+                </ul>
+            </div>
+            <!-- Col Resources -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Learning resources</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="why-file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Why file encryption?</a></li>
+                                        <li><a href="ransomware-protection.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Protection</a></li>
+                    
+                </ul>
+            </div>
+            <!-- Col Legal -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Legal</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="privacy-notice.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Privacy notice</a></li>
+                                        <li><a href="terms-and-conditions.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Terms and Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="w-full px-2 lg:px-12 xl:px-20 mt-8 pt-4 border-t border-white/10 text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            © 2025-2026 Copyright: Zentry Vault Ltd
+        </div>
+    </footer>
+
+    <!-- Modals go here -->
+    
+    <!-- Method Selection Modal -->
+    <div id="method-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800">
+            <div class="p-8">
+                <h3 class="text-xl font-bold mb-6 text-center" id="method-title">Encrypt using</h3>
+                <div class="space-y-4">
+                    <button onclick="signInWithGoogleForProcess()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24">
+                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        Continue with Google
+                    </button>
+                    <button onclick="promptContactInfo('email')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                        Continue with Email/Password
+                    </button>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-6 py-4 text-center border-t border-gray-100">
+                <button onclick="closeModal('method-modal')" class="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contact Info Modal -->
+    <div id="contact-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[110] hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800 p-8">
+            <h3 class="text-lg font-bold mb-2 text-center" id="contact-title">Enter details</h3>
+            <p class="text-xs text-gray-500 text-center mb-6" id="contact-desc">We will send a 6-digit OTP to verify.</p>
+            <input type="text" id="contact-input" class="w-full border border-gray-300 rounded p-2 text-sm mb-4 outline-none focus:border-blue-500" placeholder="">
+            
+            <div class="flex gap-2">
+                <button onclick="closeModal('contact-modal')" class="w-1/2 border border-gray-300 text-gray-600 font-semibold py-2 rounded text-sm hover:bg-gray-50 transition-colors">Cancel</button>
+                <button onclick="requestOtp()" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors">Send OTP</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- OTP Input Modal -->
+    <div id="otp-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[120] hidden backdrop-blur-sm">
+        <div class="bg-[#1a1a1c] border border-gray-800 rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-white p-8 text-center">
+            <h3 class="text-lg font-bold mb-2 text-white">Verification Code</h3>
+            <p class="text-xs text-gray-400 mb-6">Enter the 6-digit code sent to you.</p>
+            <input type="text" id="otp-input" class="w-full bg-[#111] border border-gray-700 rounded p-3 text-center tracking-widest text-lg font-bold focus:border-blue-500 outline-none mb-6" placeholder="------" maxlength="6">
+            
+            <div class="flex gap-2">
+                <button onclick="closeModal('otp-modal')" class="w-1/2 border border-gray-700 text-gray-300 font-semibold py-2 rounded text-sm hover:bg-gray-800 transition-colors">Cancel</button>
+                <button onclick="verifyOtp()" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors" id="otp-verify-btn">Verify</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Share Link Modal -->
+    <div id="share-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[130] hidden backdrop-blur-sm">
+        <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden text-gray-800 p-8">
+            <h3 class="text-lg font-bold mb-2 text-center text-gray-800">Share Encrypted Data</h3>
+            <p class="text-xs text-gray-500 text-center mb-6">Share this link with user2. They will need your approval (OTP) to decrypt it.</p>
+            <div class="flex gap-2 mb-4">
+                <input type="text" id="share-link-val" class="w-full bg-gray-100 border border-gray-300 rounded p-2 text-xs outline-none text-gray-600" readonly>
+                <button class="bg-emerald-500 text-white px-4 rounded font-semibold text-sm hover:bg-emerald-600 transition-colors">Copy</button>
+            </div>
+            
+            <button onclick="closeModal('share-modal')" class="w-full border border-gray-300 text-gray-600 font-semibold py-2 rounded text-sm hover:bg-gray-50 transition-colors">Close</button>
+        </div>
+    </div>
+
+    <!-- Custom Notification Box -->
+    <div id="notification-box" class="fixed top-24 right-8 z-[200] max-w-xs w-full hidden transform transition-all duration-300 translate-x-10 opacity-0">
+        <div class="bg-panelBg border-l-4 border-emerald-500 shadow-2xl rounded-r-lg p-4 flex items-start gap-3">
+            <div id="notification-icon" class="mt-0.5 text-emerald-500">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            </div>
+            <div class="flex-1">
+                <p id="notification-msg" class="text-sm font-medium text-white leading-snug"></p>
+            </div>
+            <button onclick="closeNotification()" class="text-gray-500 hover:text-white transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function toggleFavorite(element) {
+            const heartSvg = element.querySelector('svg');
+            if (heartSvg.classList.contains('text-red-500')) {
+                heartSvg.classList.remove('text-red-500');
+                heartSvg.classList.add('text-gray-500');
+            } else {
+                heartSvg.classList.remove('text-gray-500');
+                heartSvg.classList.add('text-red-500');
+            }
+        }
+
+        const panelEncrypt = document.getElementById('panel-encrypt');
+        const panelDecrypt = document.getElementById('panel-decrypt');
+        const btnShowEncrypt = document.getElementById('btn-show-encrypt');
+        const btnShowDecrypt = document.getElementById('btn-show-decrypt');
+
+        function updateTabStyles(activeTab) {
+            if (activeTab === 'enc') {
+                btnShowEncrypt.classList.add('border-gray-500', 'text-white');
+                btnShowEncrypt.classList.remove('border-gray-700', 'text-gray-400');
+                btnShowDecrypt.classList.add('border-gray-700', 'text-gray-400');
+                btnShowDecrypt.classList.remove('border-gray-500', 'text-white');
+            } else {
+                btnShowDecrypt.classList.add('border-gray-500', 'text-white');
+                btnShowDecrypt.classList.remove('border-gray-700', 'text-gray-400');
+                btnShowEncrypt.classList.add('border-gray-700', 'text-gray-400');
+                btnShowEncrypt.classList.remove('border-gray-500', 'text-white');
+            }
+        }
+
+        btnShowEncrypt.addEventListener('click', () => {
+            panelEncrypt.classList.remove('hidden');
+            panelDecrypt.classList.add('hidden');
+            updateTabStyles('enc');
+        });
+
+        btnShowDecrypt.addEventListener('click', () => {
+            panelDecrypt.classList.remove('hidden');
+            panelEncrypt.classList.add('hidden');
+            updateTabStyles('dec');
+        });
+
+        function handleAlgoChange(prefix) {
+            const algoSelect = document.getElementById(prefix + '-algo');
+            const singleKeyContainer = document.getElementById(prefix + '-single-key-container');
+            const tripleKeyContainer = document.getElementById(prefix + '-triple-key-container');
+            
+            if (algoSelect.value === 'TripleDES') {
+                singleKeyContainer.classList.add('hidden');
+                tripleKeyContainer.classList.remove('hidden');
+            } else {
+                singleKeyContainer.classList.remove('hidden');
+                tripleKeyContainer.classList.add('hidden');
+            }
+        }
+
+        // --- Modal Control Functions ---
+        function showModal(id) { document.getElementById(id).classList.remove('hidden'); }
+        function closeModal(id) { document.getElementById(id).classList.add('hidden'); }
+
+        let currentActiveFlow = null; // 'encrypt' or 'decrypt'
+        let selectedContactMode = null; // 'email'
+        let fakeShareId = null; 
+        
+        // 1) Start Encrypt
+        function startEncryptProcess() {
+            if (!validateFields('enc')) return;
+            currentActiveFlow = 'encrypt';
+            document.getElementById('method-title').innerText = "Encrypt using";
+            showModal('method-modal');
+        }
+
+        // 2) Start Decrypt
+        function startDecryptProcess() {
+            if (!validateFields('dec')) return;
+            currentActiveFlow = 'decrypt';
+            document.getElementById('method-title').innerText = "Decrypt using";
+            showModal('method-modal');
+        }
+
+        function validateFields(prefix) {
+            const textVal = document.getElementById(prefix + '-text').value.trim();
+            const algo = document.getElementById(prefix + '-algo').value;
+            let keysFilled = false;
+
+            if (algo === 'TripleDES') {
+                const k1 = document.getElementById(prefix + '-key-1').value.trim();
+                const k2 = document.getElementById(prefix + '-key-2').value.trim();
+                const k3 = document.getElementById(prefix + '-key-3').value.trim();
+                keysFilled = k1 && k2 && k3;
+            } else {
+                keysFilled = document.getElementById(prefix + '-key').value.trim();
+            }
+
+            // Check file for encrypt only
+            const fileInput = document.getElementById('enc-file');
+            const hasFile = prefix === 'enc' && fileInput && fileInput.files.length > 0;
+
+            if (!textVal && !hasFile) {
+                showNotification(`Please enter some ${prefix === 'enc' ? 'text or upload a file' : 'encrypted text'} to proceed.`, 'error');
+                return false;
+            }
+            if (!keysFilled) {
+                showNotification("Please fill in the secret key(s) or use 'Generate Keys'.", 'error');
+                return false;
+            }
+            return true;
+        }
+
+        function showNotification(msg, type = 'info') {
+            const box = document.getElementById('notification-box');
+            const msgEl = document.getElementById('notification-msg');
+            const iconEl = document.getElementById('notification-icon');
+            
+            msgEl.innerText = msg;
+            
+            // Type styling
+            let borderColor = 'border-emerald-500';
+            let iconTextColor = 'text-emerald-500';
+            
+            if (type === 'error') {
+                borderColor = 'border-red-500';
+                iconTextColor = 'text-red-500';
+            } else if (type === 'warning') {
+                borderColor = 'border-yellow-500';
+                iconTextColor = 'text-yellow-500';
+            }
+            
+            box.querySelector('div').className = `bg-panelBg border-l-4 shadow-2xl rounded-r-lg p-4 flex items-start gap-3 ${borderColor}`;
+            iconEl.className = `mt-0.5 ${iconTextColor}`;
+            
+            // Show animation
+            box.classList.remove('hidden');
+            setTimeout(() => {
+                box.classList.remove('translate-x-10', 'opacity-0');
+                box.classList.add('translate-x-0', 'opacity-100');
+            }, 10);
+            
+            // Auto hide
+            if (globalThis.notifTimeout) clearTimeout(globalThis.notifTimeout);
+            globalThis.notifTimeout = setTimeout(closeNotification, 4000);
+        }
+
+        function closeNotification() {
+            const box = document.getElementById('notification-box');
+            box.classList.add('translate-x-10', 'opacity-0');
+            box.classList.remove('translate-x-0', 'opacity-100');
+            setTimeout(() => {
+                box.classList.add('hidden');
+            }, 300);
+        }
+
+        function generateRandomKey(length = 16) {
+            const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+            let retVal = "";
+            for (let i = 0; i < length; ++i) {
+                retVal += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            return retVal;
+        }
+
+        function fillGeneratedKeys(prefix) {
+            const algo = document.getElementById(prefix + '-algo').value;
+            if (algo === 'TripleDES') {
+                document.getElementById(prefix + '-key-1').value = generateRandomKey(16);
+                document.getElementById(prefix + '-key-2').value = generateRandomKey(16);
+                document.getElementById(prefix + '-key-3').value = generateRandomKey(16);
+            } else {
+                document.getElementById(prefix + '-key').value = generateRandomKey(24);
+            }
+        }
+
+        // Drag and Drop Logic
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('enc-file');
+        const fileNameDisplay = document.getElementById('file-name');
+
+        if (dropZone) {
+            ['dragover', 'dragleave', 'drop'].forEach(evt => {
+                dropZone.addEventListener(evt, e => {
+                    e.preventDefault();
+                    if (evt === 'dragover') dropZone.classList.add('border-emerald-500', 'bg-emerald-500/10');
+                    else dropZone.classList.remove('border-emerald-500', 'bg-emerald-500/10');
+                });
+            });
+
+            dropZone.addEventListener('drop', e => {
+                fileInput.files = e.dataTransfer.files;
+                if (fileInput.files.length) {
+                    fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+                }
+            });
+
+            fileInput.addEventListener('change', () => {
+                if (fileInput.files.length) {
+                    fileNameDisplay.textContent = `Selected: ${fileInput.files[0].name}`;
+                } else {
+                    fileNameDisplay.textContent = "";
+                }
+            });
+        }
+
+        // 3) Select Method (Google/Email)
+        function promptContactInfo(mode) {
+            selectedContactMode = mode;
+            closeModal('method-modal');
+            document.getElementById('contact-title').innerText = 'Enter Email Address';
+            document.getElementById('contact-input').placeholder = 'name@company.com';
+            showModal('contact-modal');
+        }
+
+        // 3) Request OTP (Backend real-time email)
+        function requestOtp() {
+            const val = document.getElementById('contact-input').value;
+            if(!val) return;
+            showNotification("Requesting OTP...", "info");
+            fetch('/api/request-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contact: val })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if(data.success) {
+                    closeModal('contact-modal');
+                    showModal('otp-modal');
+                    showNotification("6-digit OTP sent to your Gmail inbox!", "success");
+                } else {
+                    showNotification(data.message, "error");
+                }
+            })
+            .catch(() => showNotification("Backend connection failed.", "error"));
+        }
+
+        // 4) Verify OTP and Finalize Process
+        function verifyOtp() {
+            const otpVal = document.getElementById('otp-input').value;
+            if(otpVal.length < 6) return;
+            
+            if (currentActiveFlow === 'encrypt') {
+                const contactVal = document.getElementById('contact-input').value;
+                const algo = document.getElementById('enc-algo').value;
+                const plaintext = document.getElementById('enc-text').value;
+                let keys = (algo === 'TripleDES') 
+                    ? [document.getElementById('enc-key-1').value, document.getElementById('enc-key-2').value, document.getElementById('enc-key-3').value]
+                    : [document.getElementById('enc-key').value];
+
+                fetch('/api/verify-and-encrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contact: contactVal, otp: otpVal, keys: keys, plaintext: plaintext, algo: algo })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        closeModal('otp-modal');
+                        handleSuccessfulVerification(data.encrypted_data, 'encrypt');
+                    } else {
+                        showNotification(data.message, "error");
+                    }
+                })
+                .catch(() => showNotification("Verification failed.", "error"));
+            } else {
+                // Decrypt Flow
+                const shareId = new URLSearchParams(window.location.search).get('share') || fakeShareId;
+                fetch('/api/verify-and-decrypt', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ share_id: shareId, otp: otpVal })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if(data.success) {
+                        closeModal('otp-modal');
+                        handleSuccessfulVerification(data.decrypted_data, 'decrypt');
+                    } else {
+                        showNotification(data.message, "error");
+                    }
+                })
+                .catch(() => showNotification("Decryption failed.", "error"));
+            }
+        }
+
+        function handleSuccessfulVerification(result, mode) {
+            if (mode === 'encrypt') {
+                document.getElementById('enc-result-container').classList.remove('hidden');
+                document.getElementById('enc-result').value = result;
+                showNotification("Encryption successful!", "success");
+            } else {
+                document.getElementById('dec-result-container').classList.remove('hidden');
+                document.getElementById('dec-result').value = result;
+                showNotification("Decryption successful!", "success");
+            }
+        }
+
+        function signInWithGoogleForProcess() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    const user = result.user;
+                    closeModal('method-modal');
+                    
+                    // Instant Encryption after Google Auth
+                    const algo = document.getElementById('enc-algo').value;
+                    const plaintext = document.getElementById('enc-text').value;
+                    let keys = (algo === 'TripleDES') 
+                        ? [document.getElementById('enc-key-1').value, document.getElementById('enc-key-2').value, document.getElementById('enc-key-3').value]
+                        : [document.getElementById('enc-key').value];
+
+                    fetch('/api/encrypt-direct', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            contact: user.email, 
+                            keys: keys,
+                            plaintext: plaintext,
+                            algo: algo 
+                        })
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        if(data.success) {
+                            handleSuccessfulVerification(data.encrypted_data, 'encrypt');
+                        } else {
+                            showNotification(data.message, "error");
+                        }
+                    })
+                    .catch(() => showNotification("Direct encryption failed.", "error"));
+                })
+                .catch((error) => showNotification(handleFirebaseError(error), "error"));
+        }
+
+        // 6) Share Link Modal
+        function showShareModal() {
+            fakeShareId = Math.random().toString(36).substring(2, 10);
+            const link = globalThis.location.origin + globalThis.location.pathname + "?share=" + fakeShareId;
+            document.getElementById('share-link-val').value = link;
+            showModal('share-modal');
+            showNotification("Share link generated!", "success");
+        }
+
+        // On Page Load: Handle URL parameters
+        globalThis.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(globalThis.location.search);
+            if (urlParams.has('share')) {
+                const loggedIn = localStorage.getItem('signedIn') === 'true';
+                if (!loggedIn) {
+                    localStorage.setItem('redirectAfterLogin', globalThis.location.href);
+                    globalThis.location.href = 'signin.html';
+                    return;
+                }
+                document.getElementById('btn-show-decrypt').click();
+                showNotification("You've opened a shared encrypted file link.", "info");
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('signedIn');
+            globalThis.location.href = 'index.html';
+        }
+
+        function signInWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then(() => {
+                    showNotification('Signed in with Google', 'success');
+                    localStorage.setItem('signedIn', 'true');
+                    closeModal('method-modal');
+                    handleSuccessfulVerification();
+                })
+                .catch((error) => showNotification(handleFirebaseError(error), 'error'));
+        }
+
+        const isSignedIn = localStorage.getItem('signedIn') === 'true';
+        if (!isSignedIn) {
+            globalThis.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

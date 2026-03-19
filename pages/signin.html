@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In - Zentry Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f9fafb; }
+    </style>
+    <!-- Firebase SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="../assets/js/firebase-config.js"></script>
+</head>
+<body class="flex items-center justify-center min-h-screen p-4">
+
+    <!-- Container -->
+    <div class="bg-white rounded-xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 flex flex-col md:flex-row w-full max-w-[850px] overflow-hidden min-h-[480px]">
+        
+        <!-- Left Side: Alternative Options -->
+        <div class="w-full md:w-1/2 p-10 md:p-12 flex flex-col justify-center border-b md:border-b-0 md:border-r border-gray-100 bg-[#fafafa]/50 relative">
+            <h2 class="text-xl font-bold text-gray-900 mb-1">Continue with</h2>
+            <p class="text-[13px] text-gray-500 mb-8">Choose an alternative way to sign in</p>
+            
+            <div class="space-y-4">
+                <button onclick="signInWithGoogle()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-2.5 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                    <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                        <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                        <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                        <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    </svg>
+                    Continue with Google
+                </button>
+                <button onclick="document.querySelector('[type=email]').focus()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-2.5 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm">
+                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                    Continue with Email/Password
+                </button>
+            </div>
+            
+            <a href="../index.html" class="absolute top-6 left-6 text-gray-400 hover:text-gray-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            </a>
+        </div>
+
+        <!-- Right Side: Standard Sign In -->
+        <div class="w-full md:w-1/2 p-10 md:p-12 flex flex-col justify-center bg-white">
+            <h2 class="text-xl font-bold text-gray-900 mb-1">Sign in</h2>
+            <p class="text-[13px] text-gray-500 mb-6">or <a href="create-account.html" class="text-blue-600 hover:text-blue-700 hover:underline font-semibold">create an account</a></p>
+            
+            <form action="#" method="POST" id="signin-form" class="space-y-4">
+                <div>
+                    <input type="email" placeholder="Email id" class="w-full border border-gray-200 rounded-lg py-2.5 px-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all" required>
+                </div>
+                <div>
+                    <input type="password" placeholder="Password" class="w-full border border-gray-200 rounded-lg py-2.5 px-4 text-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                </div>
+                
+                <div class="flex items-center pt-1 pb-2">
+                    <input type="checkbox" id="remember" class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer" checked>
+                    <label for="remember" class="ml-2.5 block text-[13px] text-gray-600 cursor-pointer select-none">
+                        Remember me
+                    </label>
+                </div>
+                
+                <button type="submit" class="w-full bg-[#2563eb] text-white font-semibold rounded-lg py-2.5 text-sm hover:bg-blue-700 transition-colors shadow-sm">
+                    Sign in
+                </button>
+                
+                <div class="text-center pt-3 mt-1">
+                    <a href="password-reset.html" class="text-[13px] text-blue-600 hover:text-blue-700 hover:underline font-semibold">Forgotten your password?</a>
+                </div>
+            </form>
+        </div>
+        
+    </div>
+
+</body>
+<script>
+    function showToast(message, isError = false) {
+        let toast = document.getElementById('toast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'toast';
+            toast.className = 'fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-[-150%] opacity-0 z-[200] flex items-center gap-3';
+            toast.innerHTML = `
+                <div id="toast-icon"></div>
+                <span id="toast-message" class="font-medium text-sm"></span>
+            `;
+            document.body.appendChild(toast);
+        }
+        
+        toast.className = `fixed top-4 right-4 text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 translate-y-[-150%] opacity-0 z-[200] flex items-center gap-3 ${isError ? 'bg-red-500' : 'bg-green-500'}`;
+        document.getElementById('toast-icon').innerHTML = isError 
+            ? '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>'
+            : '<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+        
+        document.getElementById('toast-message').textContent = message;
+        
+        requestAnimationFrame(() => {
+            toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+        });
+
+        setTimeout(() => {
+            toast.classList.add('translate-y-[-150%]', 'opacity-0');
+            toast.classList.remove('translate-y-0', 'opacity-100');
+        }, 4000);
+    }
+
+    // --- Firebase Auth Functions ---
+
+    // 1) Email/Password Sign In
+    document.getElementById('signin-form').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const email = this.querySelector('[type=email]').value;
+        const password = this.querySelector('[type=password]').value;
+        const btn = this.querySelector('button[type="submit"]');
+
+        btn.innerText = 'Signing in...';
+        btn.disabled = true;
+        
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                showToast('Signed in successfully');
+                localStorage.setItem('signedIn', 'true');
+                
+                // Real-time Email Notification (Mocked via Python Backend)
+                fetch('/api/send-notification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, type: 'login' })
+                });
+
+                setTimeout(() => { globalThis.location.href = 'dashboard.html'; }, 1500);
+            })
+            .catch((error) => {
+                showToast(handleFirebaseError(error), true);
+                btn.innerText = 'Sign in';
+                btn.disabled = false;
+            });
+    });
+
+    // 2) Google Sign In
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        auth.signInWithPopup(provider)
+            .then(() => {
+                showToast('Signed in with Google');
+                localStorage.setItem('signedIn', 'true');
+                setTimeout(() => { globalThis.location.href = 'dashboard.html'; }, 1000);
+            })
+            .catch((error) => showToast(handleFirebaseError(error), true));
+    }
+</script>
+</html>

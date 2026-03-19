@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>File Encryption - Zentry Vault</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#030305',
+                        accent: '#4f8ef5',
+                        brandTeal: '#0d9488',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #334155; margin: 0; overflow-x: hidden; }
+        
+        .glass-nav { 
+            background: rgba(3, 3, 5, 0.85); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+
+        .benefit-section {
+            padding: 80px 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .benefit-title {
+            font-size: 2.25rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 1.5rem;
+            line-height: 1.2;
+        }
+
+        .benefit-subtitle {
+            font-size: 1.875rem;
+            font-weight: 600;
+            color: #334155;
+            margin-bottom: 1rem;
+        }
+
+        .benefit-text {
+            font-size: 1.1rem;
+            line-height: 1.7;
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .box-step {
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 40px;
+            text-align: center;
+            background: white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 40px;
+            background: #4f8ef5;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.25rem;
+            border: 4px solid #f8fafc;
+        }
+
+        .btn-download {
+            background-color: #0d9488;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            margin: 20px 0;
+        }
+        .btn-download:hover { background-color: #0f766e; transform: translateY(-1px); }
+
+        footer { background-color: #051120; color: #94a3b8; }
+    </style>
+</head>
+<body class="bg-[#f8fafc] antialiased">
+
+    <!-- Transparent Sticky Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center text-white">
+            <!-- Logo -->
+            <a href="../index.html" class="flex items-center gap-3 text-2xl font-bold logo-hover">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </a>
+            
+            <!-- Navigation Links -->
+            <nav class="hidden md:flex gap-8">
+                <a href="index.html#home" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" id="nav-dashboard" class="nav-link-anim text-sm font-medium hidden">Dashboard</a>
+                <a href="index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                <a href="contact-us.html" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+
+            <!-- Authentication Buttons -->
+            <div class="flex items-center gap-5" id="auth-buttons">
+                <a href="signin.html" class="text-white text-sm font-semibold btn-signin-anim">Sign in</a>
+                <a href="create-account.html" class="bg-white text-black px-5 py-2.5 rounded-lg text-sm font-semibold btn-signup-anim">Sign up</a>
+            </div>
+            <!-- Logout Button (Hidden by default) -->
+            <div class="flex items-center gap-5 hidden" id="user-menu">
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <main class="pt-32">
+        <!-- Section: Header (Image 1 top part) -->
+        <section class="benefit-section border-b border-gray-100 flex flex-col md:flex-row items-center gap-12">
+            <div class="w-full md:w-3/5">
+                <h1 class="benefit-title">The Importance of Encryption Software: Protecting Your Data</h1>
+                <p class="benefit-text text-lg italic border-l-4 border-accent pl-4">
+                    File encryption software plays an important part in securing both consumer and business information. In this brief overview, we'll discuss the fundamentals of file encryption software and why it's important for you to utilize it.
+                </p>
+            </div>
+            <div class="w-full md:w-2/5 flex justify-center">
+                <img src="../assets/images/encryption_importance_header.png" alt="Encryption Importance" class="max-w-full rounded-xl">
+            </div>
+        </section>
+
+        <!-- Section: Image 1 Content -->
+        <section class="benefit-section border-b border-gray-100 bg-blue-50/20">
+            <h2 class="benefit-subtitle">Introduction to Encryption Software</h2>
+            <div class="benefit-text">
+                <p class="mb-6">In today's digital world, the security and privacy of personal and business information is of utmost importance. With the constant threat of cyberattacks, hacking, and theft, it is essential to have measures in place to protect sensitive information. One such measure is the use of file encryption software. This software uses advanced algorithms to convert plain text into encrypted text, making it virtually impossible for unauthorized parties to access the data. By using file encryption software, both consumers and businesses can ensure the security and privacy of their sensitive information, as well as maintain data integrity and comply with legal and regulatory requirements.</p>
+            </div>
+
+            <h2 class="benefit-subtitle mt-16">How Encryption Software Works</h2>
+            <div class="benefit-text">
+                <p class="mb-6">Encryption software works by using a complex mathematical formula, also known as a cipher, and a unique encryption key to protect your data. Think of it like a secret code: the encryption software takes your data and turns it into a jumbled mess that can only be unlocked with the correct key. There are two types of encryption: symmetric and asymmetric. With symmetric encryption, the same key is used to both lock and unlock the data, like using the same key to lock and unlock your house. On the other hand, asymmetric encryption uses two different but related keys, one to lock and one to unlock the data, like having a key to lock your house and a separate key to unlock it. This means that only people who have the correct key can access and read your encrypted data, keeping it safe and secure. An example of encryption in everyday life is online banking. When you log into your online banking account, the website encrypts your password so that it cannot be intercepted by unauthorized parties.</p>
+            </div>
+
+            <h2 class="benefit-subtitle mt-16">Encryption is Everywhere</h2>
+            <div class="benefit-text">
+                <p class="mb-8">Encryption is so widespread and commonly used today that you may be using it without even realizing it. Here are some examples:</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <div class="text-accent font-bold mb-2">1. Online Banking and E-Commerce</div>
+                        <p class="text-sm">When you log into your online bank account or make an online purchase, your data is encrypted to protect your personal information and financial details.</p>
+                    </div>
+                    <div class="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <div class="text-accent font-bold mb-2">2. Email</div>
+                        <p class="text-sm">Most email providers use encryption to protect the privacy and security of your emails, including Gmail and Yahoo Mail.</p>
+                    </div>
+                    <div class="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <div class="text-accent font-bold mb-2">3. Cloud Storage</div>
+                        <p class="text-sm">When you store files in the cloud, encryption is used to protect your data from unauthorized access. Popular cloud storage services like Google Drive, Dropbox, and OneDrive use encryption to protect your data.</p>
+                    </div>
+                    <div class="p-6 bg-white border border-gray-100 rounded-lg shadow-sm">
+                        <div class="text-accent font-bold mb-2">4. Instant Messaging</div>
+                        <p class="text-sm">Encryption is also used in instant messaging apps like WhatsApp, Signal, and iMessage to protect your conversations from being eavesdropped on.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Section: Image 2 Content -->
+        <section class="benefit-section border-b border-gray-100">
+            <h2 class="benefit-subtitle">Advantages of Encryption Software</h2>
+            <div class="benefit-text">
+                <p class="mb-6">Encryption software is important for both consumers and businesses as it provides a number of benefits, including increased security, protection for remote workers, enhanced data integrity, and compliance with laws and regulations. Implementing encryption is often inexpensive, and there are many free encryption tools available, including those integrated into smartphones and password managers.</p>
+            </div>
+
+            <h2 class="benefit-subtitle mt-16">Importance of Encryption for Consumers</h2>
+            <div class="benefit-text">
+                <p class="mb-6">File encryption is a powerful tool for consumers, providing them with a secure way to protect their sensitive information. Whether it's personal or financial data, encryption helps keep it safe from unauthorized access, cyberattacks, and hacking. With encryption, consumers can easily and securely store their important information, such as Social Security numbers, bank account details, and other sensitive files. This not only provides peace of mind but also helps maintain privacy and data integrity. So, if you want to make sure your sensitive information stays secure, file encryption is a must-have tool for any consumer in today's digital world.</p>
+            </div>
+
+            <h2 class="benefit-subtitle mt-16">Importance of Encryption for Businesses</h2>
+            <div class="benefit-text">
+                <p class="mb-6">For businesses, encryption software is vital in safeguarding sensitive information such as financial data, personal information, and trade secrets. It also helps businesses comply with regulations such as HIPAA, GDPR, and CCPA, which govern the handling and transmission of data, ensuring that they are following the law. With encryption software, businesses can have peace of mind knowing that their sensitive information is protected from unauthorized access and data breaches.</p>
+            </div>
+
+            <div class="mt-16 p-8 bg-blue-50 border border-blue-100 rounded-xl">
+                <h3 class="text-xl font-bold mb-3 text-blue-900 leading-tight">Conclusion: The Vital Role of Encryption Software in Today's Digital Landscape</h3>
+                <p class="benefit-text !mb-0 text-blue-800">In conclusion, encryption software is a vital technology for both consumers and businesses in today's digital world. With increasing concerns about data security and privacy, encryption software provides an added layer of protection for sensitive information. Zentry Vault, a leading encryption software solution, provides robust encryption capabilities to help businesses protect their data and maintain compliance.</p>
+            </div>
+        </section>
+
+        <!-- Section: Image 3 Content -->
+        <section class="benefit-section bg-blue-50/10">
+            <h2 class="benefit-subtitle text-center mb-12">How to Encrypt Files and Folders</h2>
+            
+            <div class="max-w-3xl mx-auto space-y-12">
+                <!-- Step 1 -->
+                <div class="box-step">
+                    <div class="step-number">1</div>
+                    <h3 class="text-xl font-bold mb-2">First, Download and launch Zentry Vault</h3>
+                    <p class="text-sm text-gray-500 italic mb-4">If you don't have  Zentry Vault yet, just download it here for free...</p>
+                    <a href="#" class="btn-download">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Download Now
+                    </a>
+                    
+                    <div class="mt-10 pt-6 border-t border-gray-100">
+                        <h4 class="font-bold text-gray-800 mb-2">What is Zentry Vault?</h4>
+                        <p class="text-sm text-gray-600 leading-relaxed mb-4"> Zentry Vault is a file and folder encryption App which allows you to quickly and easily encrypt all your files and folders.  Zentry Vault works just like Windows Explorer, so you already know how to use it.</p>
+                        <a href="learn-more.html" class="text-accent hover:underline text-sm font-semibold">Learn more</a>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="box-step">
+                    <div class="step-number">2</div>
+                    <h3 class="text-xl font-bold mb-2">Start Encrypting your Files</h3>
+                    <p class="text-sm text-gray-600 mb-6">Drag your files and folders into  Zentry Vault and they're automatically encrypted.</p>
+                    <div class="p-2 border border-gray-100 rounded-lg bg-gray-50 mb-6">
+                        <img src="../assets/images/file_explorer_ui_ghostvault.png" alt="GhostVault Interface" class="w-full rounded shadow-sm">
+                    </div>
+                    <p class="text-sm text-gray-600 leading-relaxed">Once encrypted, only you can access your files and folders, everyone else is denied access including your family, employer, or anyone else who can access your computer.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#051120] text-[#94a3b8] pt-12 pb-6 px-6 relative border-t border-white/5">
+        <div class="w-full px-2 lg:px-12 xl:px-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-6 text-left">
+            <!-- Connecting column with replaced SVGs -->
+            <div class="lg:border-r border-white/5 pr-4 flex flex-col gap-4">
+                <h4 class="text-white font-semibold tracking-wide uppercase text-xs">Connect with us</h4>
+                <div class="flex gap-2">
+                    <!-- GitHub -->
+                    <a href="https://github.com/hari14official" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+                    <!-- LinkedIn -->
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <!-- Gmail -->
+                    <a href="mailto:hari14official@gmail.com" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+                    <!-- Message -->
+                    <a href="https://wa.me/6383220503" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.407 2.438 1.097 3.393l-.719 2.628 2.689-.705c.915.589 1.998.932 3.167.932 3.181 0 5.767-2.586 5.767-5.767s-2.586-5.767-5.767-5.767zm3.385 8.181c-.131.37-.751.713-1.041.758-.291.045-.568.083-1.619-.341-1.288-.521-2.119-1.83-2.183-1.916-.064-.086-.522-.69-.522-1.318 0-.628.329-.937.447-1.062.118-.125.258-.156.344-.156s.172.001.246.004c.078.003.184-.03.288.223.107.26.368.896.4 1.01.032.114.054.246-.021.397-.076.151-.114.246-.227.378-.113.132-.238.293-.341.393-.114.111-.234.231-.101.459.133.228.591.974 1.269 1.579.873.777 1.611 1.018 1.84 1.132.229.114.363.096.5-.06.136-.156.589-.685.746-.919.157-.234.314-.196.53-.117.216.079 1.369.646 1.605.764.236.118.393.176.45.27.057.094.057.546-.074.918zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></a>
+                </div>
+            </div>
+            <!-- Col Company -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                                        <li><a href="contact-us.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
+                </ul>
+            </div>
+            <!-- Col Tools -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Password generator</a></li>
+                </ul>
+            </div>
+            <!-- Col Use Cases -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Use cases</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encryption-benefits.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Encryption benefits</a></li>
+                    <li><a href="file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">File encryption</a></li>
+                </ul>
+            </div>
+            <!-- Col Resources -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Learning resources</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="why-file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Why file encryption?</a></li>
+                                        <li><a href="ransomware-protection.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Protection</a></li>
+                    
+                </ul>
+            </div>
+            <!-- Col Legal -->
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Legal</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                                        <li><a href="privacy-notice.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Privacy notice</a></li>
+                                        <li><a href="terms-and-conditions.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Terms and Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="w-full px-2 lg:px-12 xl:px-20 mt-8 pt-4 border-t border-white/10 text-xs font-semibold tracking-widest text-gray-500 uppercase">
+            © 2025-2026 Copyright: Zentry Vault Ltd
+        </div>
+    </footer>
+
+    <script>
+        // ----------------------------------------------------
+        // Auth Logic Integration
+        // ----------------------------------------------------
+        const isSignedIn = localStorage.getItem('signedIn') === 'true';
+
+        if (isSignedIn) {
+            const navDashboard = document.getElementById('nav-dashboard');
+            if(navDashboard) navDashboard.classList.remove('hidden');
+            
+            const authBtns = document.getElementById('auth-buttons');
+            const userMenu = document.getElementById('user-menu');
+            if(authBtns) authBtns.classList.add('hidden');
+            if(userMenu) userMenu.classList.remove('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('signedIn');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

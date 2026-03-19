@@ -1,0 +1,5 @@
+Flask
+flask-cors
+pyotp
+pycryptodome
+python-dotenv
