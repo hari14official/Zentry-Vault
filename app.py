@@ -12,6 +12,7 @@ import base64
 from Crypto.Cipher import AES, DES3, ARC4, Salsa20
 from Crypto.Util.Padding import pad, unpad
 import hashlib
+import traceback
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -30,12 +31,41 @@ SENDER_EMAIL = os.getenv("SENDER_EMAIL", "your-email@gmail.com")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "your-app-password")
 
 
+def _perform_smtp_send(recipient, subject, body):
+    """ Internal helper to perform raw SMTP send on port 587 with STARTTLS. """
+    if "your-app-password" in SENDER_PASSWORD:
+        print(f"[SMTP] => SKIPPING: Real email credentials not configured in environment variables.")
+        print(f"[SMTP] => LOG FOR {recipient}: {body}")
+        return
+
+    try:
+        # Use Port 587 with STARTTLS which is more standard for cloud providers
+        port = 587
+        smtp_server = "smtp.gmail.com"
+        context = ssl.create_default_context()
+        
+        print(f"[SMTP] => Attempting to connect to {smtp_server}:{port}...")
+        with smtplib.SMTP(smtp_server, port) as server:
+            server.starttls(context=context)
+            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+            
+            msg = MIMEMultipart()
+            msg['From'] = SENDER_EMAIL
+            msg['To'] = recipient
+            msg['Subject'] = subject
+            msg.attach(MIMEText(body, 'plain'))
+            
+            server.send_message(msg)
+        print(f"[SMTP] => SUCCESS: Email sent to {recipient}!")
+    except Exception as e:
+        print(f"[SMTP] => FAILED: {str(e)}")
+        traceback.print_exc()
+
 def mock_send_email(email, otp, purpose='encrypt'):
     """ Wraps the actual SMTP sending in a thread to prevent blocking the UI. """
     threading.Thread(target=send_email_task, args=(email, otp, purpose)).start()
 
 def send_email_task(email, otp, purpose='encrypt'):
-    """ Actual SMTP sending logic. """
     if purpose == 'share-access':
         msg_body = f"A user is requesting access to your encrypted keys in Zentry Vault.\n\nYour OTP for granting access is: {otp}\n\nIMPORTANT: Only share this code if you trust the person requesting access. Do not share this with anyone else."
         subject = "Zentry Vault: Key Access OTP"
@@ -43,25 +73,7 @@ def send_email_task(email, otp, purpose='encrypt'):
         msg_body = f"This is the mail from Zentry Vault to Encrypt your data.\n\nYour OTP for Encryption is: {otp}\n\nNote: don't share this to anyone."
         subject = "Zentry Vault: Encryption OTP"
     
-    print(f"\n[PYTHON MODEL] => OTP Generated: {otp} for {purpose}")
-    
-    if "your-app-password" not in SENDER_PASSWORD:
-        try:
-            port = 465
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-                server.login(SENDER_EMAIL, SENDER_PASSWORD)
-                msg = MIMEMultipart()
-                msg['From'] = SENDER_EMAIL
-                msg['To'] = email
-                msg['Subject'] = subject
-                msg.attach(MIMEText(msg_body, 'plain'))
-                server.send_message(msg)
-            print(f"[PYTHON MODEL] => SUCCESS: Real email sent to {email}!")
-        except Exception as e:
-            print(f"[PYTHON MODEL] => EMAIL FAILED: {str(e)}")
-    else:
-        print(f"[PYTHON MODEL] => Real email not configured. Send this to {email}: {otp}")
+    _perform_smtp_send(email, subject, msg_body)
 
 def mock_send_notification_email(email, event_type):
     """ Wraps the actual notification SMTP sending in a thread. """
@@ -70,21 +82,7 @@ def mock_send_notification_email(email, event_type):
 def send_notification_email_task(email, event_type):
     subject = "Zentry Vault Account Alert"
     content = "Welcome! Your Zentry Vault account has been created successfully." if event_type == 'signup' else "Security Alert: New login detected."
-    
-    if "your-app-password" not in SENDER_PASSWORD:
-        try:
-            port = 465 
-            context = ssl.create_default_context()
-            with smtplib.SMTP_SSL("smtp.gmail.com", port, context=context) as server:
-                server.login(SENDER_EMAIL, SENDER_PASSWORD)
-                msg = MIMEMultipart()
-                msg['From'] = SENDER_EMAIL
-                msg['To'] = email
-                msg['Subject'] = subject
-                msg.attach(MIMEText(content, 'plain'))
-                server.send_message(msg)
-        except Exception:
-            pass
+    _perform_smtp_send(email, subject, content)
 
 @app.route('/api/request-otp', methods=['POST'])
 def request_otp():
@@ -337,4 +335,6 @@ def serve_static(path):
     return send_from_directory(BASE_DIR, path)
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    # Use dynamic port from environment for Render/Cloud compatibility
+    port = int(os.environ.get("PORT", 5000))
+    app.run(debug=False, host='0.0.0.0', port=port)
