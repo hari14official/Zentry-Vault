@@ -9,6 +9,7 @@
     <!-- Firebase SDKs (Compat) -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="../assets/js/firebase-config.js"></script>
     <script>
         tailwind.config = {
@@ -113,9 +114,9 @@
             
             <nav class="hidden md:flex gap-8">
                 <a href="../index.html" class="nav-link-anim text-sm font-medium">Home</a>
-                <a href="index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="../index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
                 <a href="dashboard.html" class="nav-link-anim active text-sm font-medium">Dashboard</a>
-                <a href="index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="../index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
                 <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
                 <a href="#" class="nav-link-anim text-sm font-medium">Contact us</a>
             </nav>
@@ -325,7 +326,7 @@
             <div class="flex flex-col gap-3 leading-snug">
                 <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
                 <ul class="space-y-2 text-sm font-medium">
-                    <li><a href="index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                    <li><a href="../index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
                     <li><a href="#" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
                 </ul>
             </div>
@@ -814,7 +815,7 @@
 
         function logout() {
             localStorage.removeItem('signedIn');
-            globalThis.location.href = 'index.html';
+            globalThis.location.href = "../index.html";
         }
 
         function signInWithGoogle() {
@@ -831,7 +832,7 @@
 
         const isSignedIn = localStorage.getItem('signedIn') === 'true';
         if (!isSignedIn) {
-            globalThis.location.href = 'index.html';
+            globalThis.location.href = "../index.html";
         }
     </script>
 </body>
