@@ -317,7 +317,7 @@
                     <div class="md:col-span-2 mt-4 space-y-4">
                         <button id="btn-decrypt-direct" onclick="startDecryptProcess()" class="w-full bg-[#3b82f6] hover:bg-blue-600 text-white font-bold py-3 rounded-md transition-colors shadow-lg">Decrypt</button>
                         
-                        <button id="btn-request-keys" onclick="requestOtpForKeys()" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-md transition-all shadow-lg flex items-center justify-center gap-2">
+                        <button id="btn-request-keys" onclick="requestOtpForKeys(this)" class="hidden w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3 rounded-md transition-all shadow-lg flex items-center justify-center gap-2">
                             <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path></svg>
                             Request OTP for keys
                         </button>
@@ -438,7 +438,7 @@
             
             <div class="flex gap-2">
                 <button onclick="closeModal('contact-modal')" class="w-1/2 border border-gray-300 text-gray-600 font-semibold py-2 rounded text-sm hover:bg-gray-50 transition-colors">Cancel</button>
-                <button onclick="requestOtp()" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors">Send OTP</button>
+                <button onclick="requestOtp(this)" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors">Send OTP</button>
             </div>
         </div>
     </div>
@@ -705,9 +705,15 @@
         }
 
         // 3) Request OTP (Backend real-time email)
-        function requestOtp() {
+        function requestOtp(btn) {
             const val = document.getElementById('contact-input').value;
             if(!val) return;
+            
+            // Disable button to prevent double-clicks
+            btn.disabled = true;
+            btn.innerText = "Sending...";
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            
             showNotification("Requesting OTP...", "info");
             fetch('/api/request-otp', {
                 method: 'POST',
@@ -722,9 +728,28 @@
                     showNotification("6-digit OTP sent to your Gmail inbox!", "success");
                 } else {
                     showNotification(data.message, "error");
+                    // Reset button on error
+                    btn.disabled = false;
+                    btn.innerText = "Send OTP";
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
             })
-            .catch(() => showNotification("Backend connection failed.", "error"));
+            .catch(() => {
+                showNotification("Backend connection failed.", "error");
+                // Reset button on error
+                btn.disabled = false;
+                btn.innerText = "Send OTP";
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            });
+            
+            // Re-enable button after 30 seconds if modal wasn't closed (or when reopened)
+            setTimeout(() => {
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Send OTP";
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                }
+            }, 30000);
         }
 
         // 4) Verify OTP and Finalize Process
@@ -1001,9 +1026,15 @@
             }
         });
 
-        function requestOtpForKeys() {
+        function requestOtpForKeys(btn) {
             const sid = new URLSearchParams(globalThis.location.search).get('share');
             if (!sid) return showNotification("Invalid share session", "error");
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Requesting...";
+                btn.classList.add('opacity-50');
+            }
             
             fetch('/api/request-decrypt-otp', {
                 method: 'POST',
@@ -1018,6 +1049,19 @@
                     showNotification(data.message, "success");
                 } else {
                     showNotification(data.message, "error");
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Request OTP for keys";
+                    btn.classList.remove('opacity-50');
+                }
+            })
+            .catch(() => {
+                showNotification("Request failed.", "error");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Request OTP for keys";
+                    btn.classList.remove('opacity-50');
                 }
             });
         }

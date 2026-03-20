@@ -5,6 +5,7 @@ import uuid
 import os
 import smtplib
 import ssl
+import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import base64
@@ -30,7 +31,11 @@ SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "your-app-password")
 
 
 def mock_send_email(email, otp, purpose='encrypt'):
-    """ Customizes the email messaging based on the purpose of the OTP. """
+    """ Wraps the actual SMTP sending in a thread to prevent blocking the UI. """
+    threading.Thread(target=send_email_task, args=(email, otp, purpose)).start()
+
+def send_email_task(email, otp, purpose='encrypt'):
+    """ Actual SMTP sending logic. """
     if purpose == 'share-access':
         msg_body = f"A user is requesting access to your encrypted keys in Zentry Vault.\n\nYour OTP for granting access is: {otp}\n\nIMPORTANT: Only share this code if you trust the person requesting access. Do not share this with anyone else."
         subject = "Zentry Vault: Key Access OTP"
@@ -59,6 +64,10 @@ def mock_send_email(email, otp, purpose='encrypt'):
         print(f"[PYTHON MODEL] => Real email not configured. Send this to {email}: {otp}")
 
 def mock_send_notification_email(email, event_type):
+    """ Wraps the actual notification SMTP sending in a thread. """
+    threading.Thread(target=send_notification_email_task, args=(email, event_type)).start()
+
+def send_notification_email_task(email, event_type):
     subject = "Zentry Vault Account Alert"
     content = "Welcome! Your Zentry Vault account has been created successfully." if event_type == 'signup' else "Security Alert: New login detected."
     
