@@ -13,6 +13,7 @@ from Crypto.Cipher import AES, DES3, ARC4, Salsa20
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 import traceback
+import socket
 from dotenv import load_dotenv
 
 # Load environment variables from .env
@@ -32,21 +33,24 @@ SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "your-app-password")
 
 
 def _perform_smtp_send(recipient, subject, body):
-    """ Internal helper to perform raw SMTP send on port 587 with STARTTLS. """
+    """ Internal helper to perform raw SMTP send on port 465 with SSL. """
     if "your-app-password" in SENDER_PASSWORD:
         print(f"[SMTP] => SKIPPING: Real email credentials not configured in environment variables.")
         print(f"[SMTP] => LOG FOR {recipient}: {body}")
         return
 
     try:
-        # Use Port 587 with STARTTLS which is more standard for cloud providers
-        port = 587
         smtp_server = "smtp.gmail.com"
+        port = 465
         context = ssl.create_default_context()
         
-        print(f"[SMTP] => Attempting to connect to {smtp_server}:{port}...")
-        with smtplib.SMTP(smtp_server, port) as server:
-            server.starttls(context=context)
+        # Force IPv4 to avoid "Network is unreachable" errors often caused by IPv6 on cloud servers
+        print(f"[SMTP] => Resolving {smtp_server} to IPv4...")
+        addr_info = socket.getaddrinfo(smtp_server, port, socket.AF_INET, socket.SOCK_STREAM)
+        ipv4_address = addr_info[0][4][0]
+        
+        print(f"[SMTP] => Connecting to {smtp_server} ({ipv4_address}):{port} (with 20s timeout)...")
+        with smtplib.SMTP_SSL(ipv4_address, port, context=context, timeout=20) as server:
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
             
             msg = MIMEMultipart()
