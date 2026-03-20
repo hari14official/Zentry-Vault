@@ -88,7 +88,28 @@
 
     <!-- Main Dashboard Section -->
     <main class="pt-32 pb-20 min-h-screen px-6 md:px-12 xl:px-20 relative">
-        <h1 class="text-2xl font-semibold mb-6">All the tools</h1>
+        <!-- Centered Heading and Search Box -->
+        <div class="flex flex-col items-center mb-12">
+            <h1 class="text-3xl font-bold mb-6">All the Tools</h1>
+             <p class="text-gray-500 text-sm mb-12">Use our tools to secure your data and privacy.with Military-Grade Security. </p>
+            <div class="relative w-full max-w-md group">
+                <input 
+                    type="text" 
+                    id="tool-search" 
+                    placeholder="Search for tools..." 
+                    class="w-full bg-cardBg border border-cardBorder focus:border-accent text-white px-12 py-3.5 rounded-full outline-none transition-all placeholder:text-gray-600 shadow-lg group-hover:border-gray-600"
+                    oninput="filterTools(this.value)"
+                >
+                <div class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-accent transition-colors">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </div>
+            </div>
+        </div>
+
+        <div id="no-results" class="hidden text-center py-20 text-gray-500">
+            <svg class="w-16 h-16 mx-auto mb-4 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            <p class="text-lg">No tools found matching your search.</p>
+        </div>
 
         
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -106,7 +127,7 @@
             </a>
 
             <!-- Tool Item 1 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="token-generator.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -118,7 +139,7 @@
             </a>
 
             <!-- Tool Item 2 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="hash-text.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -130,7 +151,7 @@
             </a>
 
             <!-- Tool Item 3 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="bcrypt.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -142,7 +163,7 @@
             </a>
 
             <!-- Tool Item 4 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="uuid-generator.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -154,7 +175,7 @@
             </a>
 
             <!-- Tool Item 5 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="ulid-generator.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -168,7 +189,7 @@
             
         
             <!-- Tool Item 7 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="bip39-generator.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -180,7 +201,7 @@
             </a>
 
             <!-- Tool Item 8 -->
-            <a href="#" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
+            <a href="hmac-generator.html" class="block bg-cardBg hover:bg-cardHover p-5 rounded-lg card-anim group relative cursor-pointer">
                 <div class="absolute top-4 right-4 z-10" onclick="toggleFavorite(event, this)">
                     <svg class="w-4 h-4 text-gray-600 hover:text-red-500 transition-colors cursor-pointer heart-icon" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
                 </div>
@@ -222,8 +243,8 @@
             <div class="flex flex-col gap-3 leading-snug">
                 <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
                 <ul class="space-y-2 text-sm font-medium">
-                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
-                    <li><a href="dashboard.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Password generator</a></li>
+                    <li><a href="encrypt-decrypt.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="token-generator.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Token generator</a></li>
                 </ul>
             </div>
             <!-- Col Use Cases -->
@@ -283,6 +304,34 @@
             } else {
                 heartSvg.classList.remove('text-gray-600');
                 heartSvg.classList.add('text-red-500');
+            }
+        }
+
+        // Filtering Logic
+        function filterTools(query) {
+            const searchQuery = query.toLowerCase().trim();
+            const tools = document.querySelectorAll('.grid > a');
+            const noResults = document.getElementById('no-results');
+            let foundCount = 0;
+            
+            tools.forEach(tool => {
+                const title = tool.querySelector('h3').innerText.toLowerCase();
+                const description = tool.querySelector('p').innerText.toLowerCase();
+                
+                if (title.includes(searchQuery) || description.includes(searchQuery)) {
+                    tool.classList.remove('hidden');
+                    tool.classList.add('block');
+                    foundCount++;
+                } else {
+                    tool.classList.remove('block');
+                    tool.classList.add('hidden');
+                }
+            });
+
+            if (foundCount === 0) {
+                noResults.classList.remove('hidden');
+            } else {
+                noResults.classList.add('hidden');
             }
         }
     </script>

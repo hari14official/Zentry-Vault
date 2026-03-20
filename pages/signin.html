@@ -135,7 +135,9 @@
                     body: JSON.stringify({ email: email, type: 'login' })
                 });
 
-                setTimeout(() => { globalThis.location.href = 'dashboard.html'; }, 1500);
+                const redir = localStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+                localStorage.removeItem('redirectAfterLogin');
+                setTimeout(() => { globalThis.location.href = redir; }, 1500);
             })
             .catch((error) => {
                 showToast(handleFirebaseError(error), true);
@@ -151,7 +153,9 @@
             .then(() => {
                 showToast('Signed in with Google');
                 localStorage.setItem('signedIn', 'true');
-                setTimeout(() => { globalThis.location.href = 'dashboard.html'; }, 1000);
+                const redir = localStorage.getItem('redirectAfterLogin') || 'dashboard.html';
+                localStorage.removeItem('redirectAfterLogin');
+                setTimeout(() => { globalThis.location.href = redir; }, 1000);
             })
             .catch((error) => showToast(handleFirebaseError(error), true));
     }

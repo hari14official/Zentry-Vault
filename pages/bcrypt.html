@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bcrypt - Zentry Vault</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#1a1a1a',
+                        panelBg: '#2a2a2a',
+                        inputBg: '#333333',
+                        accent: '#4f8ef5',
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #1a1a1a; color: #e5e5e5; margin: 0; overflow-x: hidden; }
+        .glass-nav { 
+            background: rgba(26, 26, 26, 0.8); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+        
+        .header-title { font-weight: normal; font-size: 2.25rem; line-height: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: none; margin-bottom: 1rem; margin-top: 1rem; width: 100%; }
+        
+        .cyber-input {
+            width: 100%;
+            background-color: #333333;
+            color: #d4d4d4;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 8px 12px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .cyber-textarea {
+            width: 100%;
+            background-color: #333333;
+            color: #d4d4d4;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            padding: 12px;
+            font-size: 13px;
+            font-family: inherit;
+            outline: none;
+            resize: vertical;
+            min-height: 80px;
+            transition: all 0.2s;
+        }
+        .cyber-textarea:focus, .cyber-input:focus {
+            border-color: #555;
+            background-color: #3a3a3a;
+        }
+        .cyber-label {
+            display: block;
+            font-size: 13px;
+            color: #e5e5e5;
+            margin-bottom: 6px;
+            margin-top: 16px;
+        }
+        .cyber-label:first-child { margin-top: 0; }
+        
+        .tab-btn { background-color: #333333; color: #a1a1aa; border: 1px solid #444; transition: all 0.2s; }
+        .tab-btn.active { background-color: #333333; color: #ffffff; border-color: #666; font-weight: 600; }
+        
+        /* Custom Salt Controls */
+        .salt-btn { background: #333; border: 1px solid #444; color: #fff; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .salt-btn:hover { background: #444; }
+    </style>
+</head>
+<body class="bg-background text-white antialiased">
+    <!-- Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center text-white">
+            <button class="flex items-center gap-3 text-2xl font-bold logo-hover focus:outline-none" onclick="globalThis.location.href='../index.html'" aria-label="Zentry Vault Home">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </button>
+            
+            <nav class="hidden md:flex gap-8">
+                <a href="../index.html" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="../index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" class="nav-link-anim active text-sm font-medium">Dashboard</a>
+                <a href="../index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                <a href="contact-us.html" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+
+            <div class="flex items-center gap-5">
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-32 pb-20 min-h-screen px-6 md:px-12 xl:px-32 max-w-[1400px] mx-auto">
+        <div class="max-w-4xl mx-auto flex flex-col items-center text-center border-b border-white/10 mb-8 pb-4">
+            <div class="header-title text-gray-100 justify-center">
+                <span>Bcrypt</span>
+                <button onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700 flex items-center justify-center hover:bg-white/5 transition-colors focus:outline-none" aria-label="Toggle Favorite">
+                    <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                </button>
+            </div>
+            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl mb-8">
+                Hash and compare text string using bcrypt. Bcrypt is a password-hashing function based on the Blowfish cipher.
+            </p>
+            
+            <div class="flex gap-4 mb-4">
+                <button id="tab-hash" class="tab-btn active px-6 py-2 rounded font-semibold">Hash</button>
+                <button id="tab-compare" class="tab-btn px-6 py-2 rounded font-semibold text-gray-400">Compare</button>
+            </div>
+        </div>
+
+        <div class="max-w-4xl mx-auto">
+            <!-- Hash Panel -->
+            <div id="panel-hash" class="bg-panelBg rounded-md p-8 border border-white/5">
+                <h3 class="font-bold text-white mb-6">Hash string</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label for="hash-string" class="cyber-label text-gray-200">Your string:</label>
+                        <input type="text" id="hash-string" oninput="generateHash()" class="cyber-input" placeholder="Enter text to hash...">
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="cyber-label !mt-0 !mb-0 text-gray-200">Salt rounds:</span>
+                        <div class="flex items-center gap-2">
+                            <button onclick="updateSalt(-1)" class="salt-btn" aria-label="Decrease Salt Rounds">-</button>
+                            <span id="salt-count" class="w-8 text-center font-bold text-accent">10</span>
+                            <button onclick="updateSalt(1)" class="salt-btn" aria-label="Increase Salt Rounds">+</button>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="hash-result" class="cyber-label text-gray-200">Result:</label>
+                        <div class="relative">
+                            <textarea id="hash-result" readonly class="cyber-textarea font-mono pr-16 bg-neutral-800" placeholder="Hash will appear here..."></textarea>
+                            <button onclick="copyToClipboard('hash-result', this)" class="absolute right-3 top-3 text-accent hover:text-white transition-colors font-bold text-[10px] uppercase">
+                                Copy
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Compare Panel -->
+            <div id="panel-compare" class="bg-panelBg rounded-md p-8 border border-white/5 hidden">
+                <h3 class="font-bold text-white mb-6">Compare string with hash</h3>
+                <div class="space-y-6">
+                    <div>
+                        <label for="compare-string" class="cyber-label text-gray-200">Your string:</label>
+                        <input type="text" id="compare-string" oninput="compareHashes()" class="cyber-input" placeholder="Enter original text...">
+                    </div>
+                    <div>
+                        <label for="compare-hash" class="cyber-label text-gray-200">Your hash:</label>
+                        <input type="text" id="compare-hash" oninput="compareHashes()" class="cyber-input" placeholder="Enter bcrypt hash to compare...">
+                    </div>
+                    <div class="pt-4 flex items-center gap-4">
+                        <span class="text-sm font-medium text-gray-200 uppercase tracking-wider">Do they match?</span>
+                        <div id="match-status" class="px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest bg-inputBg text-gray-500">Waiting...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (Exact same as encrypt-decrypt.html) -->
+    <footer class="bg-[#051120] text-[#94a3b8] pt-12 pb-6 px-6 relative border-t border-white/5 mt-20">
+        <div class="w-full px-2 lg:px-12 xl:px-20 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-x-6 gap-y-6 text-left">
+            <div class="lg:border-r border-white/5 pr-4 flex flex-col gap-4">
+                <h4 class="text-white font-semibold tracking-wide uppercase text-xs">Connect with us</h4>
+                <div class="flex gap-2">
+                    <a href="https://github.com/hari14official" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.387.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.3 24 12c0-6.627-5.373-12-12-12z"/></svg></a>
+                    <a href="#" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a>
+                    <a href="mailto:hari14official@gmail.com" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg></a>
+                    <a href="https://wa.me/6383220503" target="_blank" class="bg-white/5 p-2 rounded hover:bg-white/10 transition-colors border border-white/5"><svg class="w-4 h-4 fill-current text-[#a1a1aa] hover:text-white" viewBox="0 0 24 24"><path d="M12.031 6.172c-3.181 0-5.767 2.586-5.767 5.767 0 1.267.407 2.438 1.097 3.393l-.719 2.628 2.689-.705c.915.589 1.998.932 3.167.932 3.181 0 5.767-2.586 5.767-5.767s-2.586-5.767-5.767-5.767zm3.385 8.181c-.131.37-.751.713-1.041.758-.291.045-.568.083-1.619-.341-1.288-.521-2.119-1.83-2.183-1.916-.064-.086-.522-.69-.522-1.318 0-.628.329-.937.447-1.062.118-.125.258-.156.344-.156s.172.001.246.004c.078.003.184-.03.288.223.107.26.368.896.4 1.01.032.114.054.246-.021.397-.076.151-.114.246-.227.378-.113.132-.238.293-.341.393-.114.111-.234.231-.101.459.133.228.591.974 1.269 1.579.873.777 1.611 1.018 1.84 1.132.229.114.363.096.5-.06.136-.156.589-.685.746-.919.157-.234.314-.196.53-.117.216.079 1.369.646 1.605.764.236.118.393.176.45.27.057.094.057.546-.074.918zM12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg></a>
+                </div>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Company</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="../index.html#about" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">About</a></li>
+                    <li><a href="contact-us.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Contact</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Tools</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encrypt-decrypt.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Text encryption</a></li>
+                    <li><a href="token-generator.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Token generator</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Use cases</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="encryption-benefits.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Encryption benefits</a></li>
+                    <li><a href="file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">File encryption</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Learning resources</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="why-file-encryption.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Why file encryption?</a></li>
+                    <li><a href="ransomware-protection.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Protection</a></li>
+                </ul>
+            </div>
+            <div class="flex flex-col gap-3 leading-snug">
+                <h4 class="text-white font-semibold tracking-wide mb-1 opacity-70 uppercase text-[10px]">Legal</h4>
+                <ul class="space-y-2 text-sm font-medium">
+                    <li><a href="privacy-notice.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Privacy notice</a></li>
+                    <li><a href="terms-and-conditions.html" class="hover:text-white hover:underline transition-colors text-[#94a3b8]">Terms and Conditions</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="w-full px-2 lg:px-12 xl:px-20 mt-8 pt-4 border-t border-white/10 text-xs font-semibold tracking-widest text-gray-500 uppercase text-left">
+            © 2025-2026 Copyright: Zentry Vault Ltd
+        </div>
+    </footer>
+
+    <script>
+        const bcrypt = dcodeIO.bcrypt;
+        let saltRounds = 10;
+
+        function updateSalt(val) {
+            saltRounds = Math.max(4, Math.min(31, saltRounds + val));
+            const countLabel = document.getElementById('salt-count');
+            if (countLabel) {
+                countLabel.innerText = saltRounds;
+            }
+            generateHash();
+        }
+
+        async function generateHash() {
+            const inputEl = document.getElementById('hash-string');
+            const resField = document.getElementById('hash-result');
+            if (!inputEl || !resField) {
+                return;
+            }
+            const str = inputEl.value;
+            if (!str) {
+                resField.value = '';
+                return;
+            }
+            
+            try {
+                resField.value = "Hashing...";
+                setTimeout(() => {
+                    try {
+                        const salt = bcrypt.genSaltSync(saltRounds);
+                        const hash = bcrypt.hashSync(str, salt);
+                        resField.value = hash;
+                    } catch (innerError) {
+                        console.error("Bcrypt hashing error:", innerError);
+                        resField.value = "Error during hashing";
+                    }
+                }, 100);
+            } catch (e) {
+                console.error("Bcrypt setup error:", e);
+                resField.value = "Error: " + e.message;
+            }
+        }
+
+        function compareHashes() {
+            const strEl = document.getElementById('compare-string');
+            const hashEl = document.getElementById('compare-hash');
+            const status = document.getElementById('match-status');
+            
+            if (!strEl || !hashEl || !status) {
+                return;
+            }
+
+            const str = strEl.value;
+            const hash = hashEl.value;
+            
+            if (!str || !hash) {
+                status.innerText = "Waiting...";
+                status.className = "px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest bg-inputBg text-gray-500";
+                return;
+            }
+
+            try {
+                const match = bcrypt.compareSync(str, hash);
+                status.innerText = match ? "Match" : "No Match";
+                status.className = match 
+                    ? "px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" 
+                    : "px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest bg-red-500/10 text-red-500 border border-red-500/20";
+            } catch (e) {
+                console.error("Bcrypt comparison error:", e);
+                status.innerText = "Error";
+                status.className = "px-4 py-1.5 rounded text-xs font-bold uppercase tracking-widest bg-orange-500/10 text-orange-500 border border-orange-500/20";
+            }
+        }
+
+        // Tab Switching
+        const tabHash = document.getElementById('tab-hash');
+        const tabCompare = document.getElementById('tab-compare');
+        const panelHash = document.getElementById('panel-hash');
+        const panelCompare = document.getElementById('panel-compare');
+
+        if (tabHash && tabCompare && panelHash && panelCompare) {
+            tabHash.addEventListener('click', () => {
+                tabHash.classList.add('active');
+                tabHash.classList.remove('text-gray-400');
+                tabCompare.classList.remove('active');
+                tabCompare.classList.add('text-gray-400');
+                panelHash.classList.remove('hidden');
+                panelCompare.classList.add('hidden');
+            });
+
+            tabCompare.addEventListener('click', () => {
+                tabCompare.classList.add('active');
+                tabCompare.classList.remove('text-gray-400');
+                tabHash.classList.remove('active');
+                tabHash.classList.add('text-gray-400');
+                panelCompare.classList.remove('hidden');
+                panelHash.classList.add('hidden');
+            });
+        }
+
+        async function copyToClipboard(id, btn) {
+            const el = document.getElementById(id);
+            if (!el || !el.value || el.value.includes("...")) {
+                return;
+            }
+            try {
+                await navigator.clipboard.writeText(el.value);
+                const originalText = btn.innerText;
+                btn.innerText = "COPIED!";
+                setTimeout(() => {
+                    btn.innerText = originalText;
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+            }
+        }
+
+        function toggleFavorite(element) {
+            const heartSvg = element.querySelector('svg');
+            if (heartSvg) {
+                heartSvg.classList.toggle('text-red-500');
+                heartSvg.classList.toggle('text-gray-500');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('signedIn');
+            globalThis.location.href = '../index.html';
+        }
+    </script>
+</body>
+</html>

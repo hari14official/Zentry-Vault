@@ -8,7 +8,7 @@ import ssl
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import base64
-from Crypto.Cipher import AES, DES3
+from Crypto.Cipher import AES, DES3, ARC4, Salsa20
 from Crypto.Util.Padding import pad, unpad
 import hashlib
 from dotenv import load_dotenv
@@ -29,12 +29,16 @@ SENDER_EMAIL = os.getenv("SENDER_EMAIL", "your-email@gmail.com")
 SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "your-app-password")
 
 
-def mock_send_email(email, otp):
-    """ Sends a real email to Gmail if credentials are provided. """
-    msg_body = f"Your Zentry Vault OTP is: {otp}\n\nThis code will expire in 5 minutes."
-    subject = "Zentry Vault Security Code"
+def mock_send_email(email, otp, purpose='encrypt'):
+    """ Customizes the email messaging based on the purpose of the OTP. """
+    if purpose == 'share-access':
+        msg_body = f"A user is requesting access to your encrypted keys in Zentry Vault.\n\nYour OTP for granting access is: {otp}\n\nIMPORTANT: Only share this code if you trust the person requesting access. Do not share this with anyone else."
+        subject = "Zentry Vault: Key Access OTP"
+    else:
+        msg_body = f"This is the mail from Zentry Vault to Encrypt your data.\n\nYour OTP for Encryption is: {otp}\n\nNote: don't share this to anyone."
+        subject = "Zentry Vault: Encryption OTP"
     
-    print(f"\n[PYTHON MODEL] => OTP Generated: {otp}")
+    print(f"\n[PYTHON MODEL] => OTP Generated: {otp} for {purpose}")
     
     if "your-app-password" not in SENDER_PASSWORD:
         try:
@@ -81,10 +85,14 @@ def request_otp():
     totp = pyotp.TOTP(secret, interval=300)
     otp = totp.now()
     otps_in_transit[contact_val] = {'otp': otp, 'secret': secret}
-    mock_send_email(contact_val, otp)
+    mock_send_email(contact_val, otp, purpose='encrypt')
     return jsonify({"success": True, "message": "OTP sent successfully"})
 
-def get_crypto_key(keys_list, length):
+def get_crypto_key(keys_list, length, algo=None):
+    if algo == 'TripleDES' and len(keys_list) == 3:
+        # Use direct concatenation of the three 8-character keys as requested
+        # Each DES key must be 8 bytes
+        return "".join(keys_list).encode()[:length]
     combined = "".join(keys_list).encode()
     return hashlib.sha256(combined).digest()[:length]
 
@@ -103,10 +111,25 @@ def verify_and_encrypt():
 
     try:
         if algo == 'TripleDES':
-            real_key = get_crypto_key(keys, 24)
+            # SECURITY NOTE: TripleDES is a legacy algorithm provided for compatibility/educational tools.
+            # Stronger alternatives like AES are recommended for modern security applications.
+            real_key = get_crypto_key(keys, 24, algo='TripleDES')
             cipher = DES3.new(real_key, DES3.MODE_CBC)
             iv = cipher.iv
             ct_bytes = cipher.encrypt(pad(plaintext.encode(), 8))
+        elif algo == 'RC4':
+            # SECURITY NOTE: RC4 is a legacy stream cipher with known vulnerabilities.
+            # It is provided here as part of a comprehensive crypto-toolkit.
+            real_key = get_crypto_key(keys, 16)
+            cipher = ARC4.new(real_key)
+            ct_bytes = cipher.encrypt(plaintext.encode())
+            iv = b"" # RC4 does not use IV
+        elif algo == 'Rabbit':
+            # Using Salsa20 as an efficient equivalent stream cipher for 'Rabbit'
+            real_key = get_crypto_key(keys, 32)
+            cipher = Salsa20.new(key=real_key)
+            ct_bytes = cipher.encrypt(plaintext.encode())
+            iv = cipher.nonce # Handled as IV for transport
         else:
             real_key = get_crypto_key(keys, 32)
             cipher = AES.new(real_key, AES.MODE_CBC)
@@ -136,14 +159,28 @@ def encrypt_direct():
     algo = data.get('algo', 'AES')
 
     if not contact_val:
-        return jsonify({"success": False, "message": "User email required"}), 400
+        return jsonify({"success": False, "message": "User email required for sharing"}), 400
+
+    print(f"DEBUG: Encryption started for {contact_val} using {algo}")
 
     try:
         if algo == 'TripleDES':
-            real_key = get_crypto_key(keys, 24)
+            # Compatibility mode for legacy systems
+            real_key = get_crypto_key(keys, 24, algo='TripleDES')
             cipher = DES3.new(real_key, DES3.MODE_CBC)
             iv = cipher.iv
             ct_bytes = cipher.encrypt(pad(plaintext.encode(), 8))
+        elif algo == 'RC4':
+            # Compatibility mode for legacy systems
+            real_key = get_crypto_key(keys, 16)
+            cipher = ARC4.new(real_key)
+            ct_bytes = cipher.encrypt(plaintext.encode())
+            iv = b""
+        elif algo == 'Rabbit':
+            real_key = get_crypto_key(keys, 32)
+            cipher = Salsa20.new(key=real_key)
+            ct_bytes = cipher.encrypt(plaintext.encode())
+            iv = cipher.nonce
         else:
             real_key = get_crypto_key(keys, 32)
             cipher = AES.new(real_key, AES.MODE_CBC)
@@ -169,14 +206,33 @@ def request_decrypt_otp():
     share_id = data.get('share_id')
     share_info = encrypted_shares.get(share_id)
     if not share_info:
+        print(f"DEBUG Error: Share ID {share_id} not found in {list(encrypted_shares.keys())}")
         return jsonify({"success": False, "message": "Invalid Share ID"}), 404
     owner_contact = share_info['owner_contact']
+    
+    print(f"DEBUG: Requesting OTP for share_id {share_id}. Owner is {owner_contact}")
+    
+    # Generate OTP
     secret = pyotp.random_base32()
     totp = pyotp.TOTP(secret, interval=300)
     otp = totp.now()
     otps_in_transit[owner_contact] = {'otp': otp, 'secret': secret}
-    mock_send_email(owner_contact, otp)
-    return jsonify({"success": True, "message": "OTP sent to owner."})
+    
+    # Send to OWNER (User 1)
+    print(f"DEBUG: Attempting to send OTP {otp} to {owner_contact}")
+    mock_send_email(owner_contact, otp, purpose='share-access')
+    return jsonify({"success": True, "message": f"6-digit OTP sent to {owner_contact} G-mail account."})
+
+@app.route('/api/share-info/<share_id>', methods=['GET'])
+def get_share_info(share_id):
+    share_info = encrypted_shares.get(share_id)
+    if not share_info:
+        return jsonify({"success": False, "message": "Share link expired or invalid"}), 404
+    return jsonify({
+        "success": True, 
+        "encrypted_data": share_info['encrypted_data'],
+        "algo": share_info['algo']
+    })
 
 @app.route('/api/verify-and-decrypt', methods=['POST'])
 def verify_and_decrypt():
@@ -193,10 +249,21 @@ def verify_and_decrypt():
     try:
         raw = base64.b64decode(share_info['encrypted_data'])
         if share_info['algo'] == 'TripleDES':
+            # Compatibility mode for legacy systems
             iv, ct = raw[:8], raw[8:]
-            real_key = get_crypto_key(share_info['keys'], 24)
+            real_key = get_crypto_key(share_info['keys'], 24, algo='TripleDES')
             cipher = DES3.new(real_key, DES3.MODE_CBC, iv=iv)
             decrypted_str = unpad(cipher.decrypt(ct), 8).decode('utf-8')
+        elif share_info['algo'] == 'RC4':
+            # Compatibility mode for legacy systems
+            real_key = get_crypto_key(share_info['keys'], 16)
+            cipher = ARC4.new(real_key)
+            decrypted_str = cipher.decrypt(raw).decode('utf-8')
+        elif share_info['algo'] == 'Rabbit':
+            iv, ct = raw[:8], raw[8:] # Salsa20 nonce is 8 bytes
+            real_key = get_crypto_key(share_info['keys'], 32)
+            cipher = Salsa20.new(key=real_key, nonce=iv)
+            decrypted_str = cipher.decrypt(ct).decode('utf-8')
         else:
             iv, ct = raw[:16], raw[16:]
             real_key = get_crypto_key(share_info['keys'], 32)
@@ -204,7 +271,12 @@ def verify_and_decrypt():
             decrypted_str = unpad(cipher.decrypt(ct), 16).decode('utf-8')
     except Exception as e:
         return jsonify({"success": False, "message": f"Decryption error: {str(e)}"}), 500
-    return jsonify({"success": True, "decrypted_data": decrypted_str})
+    return jsonify({
+        "success": True, 
+        "decrypted_data": decrypted_str,
+        "keys": share_info['keys'],
+        "algo": share_info['algo']
+    })
 
 @app.route('/api/request-reset-otp', methods=['POST'])
 def request_reset_otp():
