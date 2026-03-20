@@ -402,20 +402,21 @@
 
     <!-- Modals go here -->
     
+    <!-- reCAPTCHA invisible container for Firebase Phone Auth -->
+    <div id="recaptcha-container"></div>
+
     <!-- Method Selection Modal -->
     <div id="method-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800">
             <div class="p-8">
                 <h3 class="text-xl font-bold mb-6 text-center" id="method-title">Encrypt using</h3>
                 <div class="space-y-4">
-                    <button onclick="signInWithGoogleForProcess()" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
-                        <svg class="w-[18px] h-[18px]" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                    <button onclick="promptContactInfo('phone')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
+                        <!-- Phone icon -->
+                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
                         </svg>
-                        Continue with Google
+                        Continue with Phone Number
                     </button>
                     <button onclick="promptContactInfo('email')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
                         <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
@@ -434,11 +435,38 @@
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800 p-8">
             <h3 class="text-lg font-bold mb-2 text-center" id="contact-title">Enter details</h3>
             <p class="text-xs text-gray-500 text-center mb-6" id="contact-desc">We will send a 6-digit OTP to verify.</p>
-            <input type="text" id="contact-input" class="w-full border border-gray-300 rounded p-2 text-sm mb-4 outline-none focus:border-blue-500" placeholder="">
-            
+
+            <!-- Email input (shown for email mode) -->
+            <div id="contact-email-row">
+                <input type="email" id="contact-input" class="w-full border border-gray-300 rounded p-2 text-sm mb-4 outline-none focus:border-blue-500" placeholder="name@company.com">
+            </div>
+
+            <!-- Phone input (shown for phone mode) -->
+            <div id="contact-phone-row" class="hidden mb-4">
+                <div class="flex gap-2 items-center">
+                    <div class="flex items-center border border-gray-300 rounded px-3 py-2 bg-gray-50 gap-1 shrink-0">
+                        <span class="text-lg">🇮🇳</span>
+                        <select id="country-code" class="text-sm font-semibold text-gray-700 bg-transparent outline-none cursor-pointer">
+                            <option value="+91">+91</option>
+                            <option value="+1">+1</option>
+                            <option value="+44">+44</option>
+                            <option value="+61">+61</option>
+                            <option value="+65">+65</option>
+                            <option value="+971">+971</option>
+                            <option value="+60">+60</option>
+                            <option value="+49">+49</option>
+                            <option value="+33">+33</option>
+                            <option value="+81">+81</option>
+                        </select>
+                    </div>
+                    <input type="tel" id="phone-input" class="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-emerald-500" placeholder="9876543210" maxlength="15">
+                </div>
+                <p class="text-[11px] text-gray-400 mt-1.5 ml-1">Enter your number without the country code.</p>
+            </div>
+
             <div class="flex gap-2">
                 <button onclick="closeModal('contact-modal')" class="w-1/2 border border-gray-300 text-gray-600 font-semibold py-2 rounded text-sm hover:bg-gray-50 transition-colors">Cancel</button>
-                <button onclick="requestOtp(this)" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors">Send OTP</button>
+                <button id="send-otp-btn" onclick="requestOtp(this)" class="w-1/2 bg-blue-600 text-white font-semibold py-2 rounded text-sm hover:bg-blue-700 transition-colors">Send OTP</button>
             </div>
         </div>
     </div>
@@ -695,26 +723,93 @@
             });
         }
 
-        // 3) Select Method (Google/Email)
+        // 3) Select Method (Phone/Email)
         function promptContactInfo(mode) {
             selectedContactMode = mode;
             closeModal('method-modal');
-            document.getElementById('contact-title').innerText = 'Enter Email Address';
-            document.getElementById('contact-input').placeholder = 'name@company.com';
+            const emailRow = document.getElementById('contact-email-row');
+            const phoneRow = document.getElementById('contact-phone-row');
+            const sendBtn = document.getElementById('send-otp-btn');
+
+            if (mode === 'phone') {
+                document.getElementById('contact-title').innerText = 'Enter Phone Number';
+                document.getElementById('contact-desc').innerText = 'We will send a 6-digit OTP via SMS.';
+                emailRow.classList.add('hidden');
+                phoneRow.classList.remove('hidden');
+                sendBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                sendBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
+            } else {
+                document.getElementById('contact-title').innerText = 'Enter Email Address';
+                document.getElementById('contact-desc').innerText = 'We will send a 6-digit OTP to verify.';
+                emailRow.classList.remove('hidden');
+                phoneRow.classList.add('hidden');
+                sendBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
+                sendBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            }
             showModal('contact-modal');
         }
 
-        // 3) Request OTP (Backend real-time email)
-        function requestOtp(btn) {
-            const val = document.getElementById('contact-input').value;
-            if(!val) return;
-            
-            // Disable button to prevent double-clicks
+        // Firebase Phone Auth confirmation result holder
+        let phoneConfirmationResult = null;
+
+        // Helper: setup invisible reCAPTCHA (only once)
+        function setupRecaptcha() {
+            if (!globalThis.recaptchaVerifier) {
+                globalThis.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+                    size: 'invisible',
+                    callback: () => {}
+                });
+            }
+        }
+
+        // 3a) Request OTP via Phone (Firebase Phone Auth)
+        function requestOtpPhone(btn) {
+            const countryCode = document.getElementById('country-code').value;
+            const phoneNum = document.getElementById('phone-input').value.trim();
+            if (!phoneNum) {
+                showNotification('Please enter your phone number.', 'error');
+                return;
+            }
+            const fullNumber = countryCode + phoneNum;
+
             btn.disabled = true;
-            btn.innerText = "Sending...";
+            btn.innerText = 'Sending...';
             btn.classList.add('opacity-50', 'cursor-not-allowed');
-            
-            showNotification("Requesting OTP...", "info");
+            showNotification('Sending OTP via SMS...', 'info');
+
+            setupRecaptcha();
+            auth.signInWithPhoneNumber(fullNumber, globalThis.recaptchaVerifier)
+                .then((confirmationResult) => {
+                    phoneConfirmationResult = confirmationResult;
+                    // Store phone as contact for downstream usage
+                    document.getElementById('contact-input').value = fullNumber;
+                    closeModal('contact-modal');
+                    showModal('otp-modal');
+                    showNotification('6-digit OTP sent to ' + fullNumber + ' via SMS!', 'success');
+                })
+                .catch((err) => {
+                    showNotification('SMS failed: ' + (err.message || 'Please try again.'), 'error');
+                    // Reset reCAPTCHA on failure so it can be retried
+                    globalThis.recaptchaVerifier.render().then((id) => grecaptcha.reset(id));
+                    btn.disabled = false;
+                    btn.innerText = 'Send OTP';
+                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+        }
+
+        // 3b) Request OTP via Email (Backend SMTP)
+        function requestOtpEmail(btn) {
+            const val = document.getElementById('contact-input').value.trim();
+            if (!val) {
+                showNotification('Please enter your email address.', 'error');
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = 'Sending...';
+            btn.classList.add('opacity-50', 'cursor-not-allowed');
+            showNotification('Requesting OTP...', 'info');
+
             fetch('/api/request-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -722,41 +817,75 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.success) {
+                if (data.success) {
                     closeModal('contact-modal');
                     showModal('otp-modal');
-                    showNotification("6-digit OTP sent to your Gmail inbox!", "success");
+                    showNotification('6-digit OTP sent to your Gmail inbox!', 'success');
                 } else {
-                    showNotification(data.message, "error");
-                    // Reset button on error
+                    showNotification(data.message, 'error');
                     btn.disabled = false;
-                    btn.innerText = "Send OTP";
+                    btn.innerText = 'Send OTP';
                     btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
             })
             .catch(() => {
-                showNotification("Backend connection failed.", "error");
-                // Reset button on error
+                showNotification('Backend connection failed.', 'error');
                 btn.disabled = false;
-                btn.innerText = "Send OTP";
+                btn.innerText = 'Send OTP';
                 btn.classList.remove('opacity-50', 'cursor-not-allowed');
             });
-            
-            // Re-enable button after 30 seconds if modal wasn't closed (or when reopened)
+
             setTimeout(() => {
                 if (btn) {
                     btn.disabled = false;
-                    btn.innerText = "Send OTP";
+                    btn.innerText = 'Send OTP';
                     btn.classList.remove('opacity-50', 'cursor-not-allowed');
                 }
             }, 30000);
         }
 
+        // 3) Dispatcher: routes to phone or email OTP sender
+        function requestOtp(btn) {
+            if (selectedContactMode === 'phone') {
+                requestOtpPhone(btn);
+            } else {
+                requestOtpEmail(btn);
+            }
+        }
+
         // 4) Verify OTP and Finalize Process
         function verifyOtp() {
             const otpVal = document.getElementById('otp-input').value;
-            if(otpVal.length < 6) return;
-            
+            if (otpVal.length < 6) return;
+
+            // --- Phone OTP path: verify via Firebase ---
+            if (selectedContactMode === 'phone' && phoneConfirmationResult) {
+                const verifyBtn = document.getElementById('otp-verify-btn');
+                verifyBtn.disabled = true;
+                verifyBtn.innerText = 'Verifying...';
+                phoneConfirmationResult.confirm(otpVal)
+                    .then((result) => {
+                        closeModal('otp-modal');
+                        verifyBtn.disabled = false;
+                        verifyBtn.innerText = 'Verify';
+                        // Use phone number as contact, then proceed with encryption/decryption
+                        const contactVal = result.user.phoneNumber;
+                        document.getElementById('contact-input').value = contactVal;
+                        if (currentActiveFlow === 'encrypt') {
+                            proceedWithEncrypt(contactVal, otpVal);
+                        } else {
+                            proceedWithDecrypt(otpVal);
+                        }
+                    })
+                    .catch((err) => {
+                        verifyBtn.disabled = false;
+                        verifyBtn.innerText = 'Verify';
+                        showNotification('Invalid OTP. Please try again.', 'error');
+                    });
+                return;
+            }
+
+            // --- Email OTP path: verify via backend ---
             if (currentActiveFlow === 'encrypt') {
                 const contactVal = document.getElementById('contact-input').value;
                 const algo = document.getElementById('enc-algo').value;
@@ -791,42 +920,65 @@
                     });
                 }
             } else {
-                // Decrypt / Keys Flow
-                const params = new URLSearchParams(globalThis.location.search);
-                const shareId = params.get('share') || globalThis.fakeShareId;
-                
-                fetch('/api/verify-and-decrypt', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ share_id: shareId, otp: otpVal })
-                })
-                .then(res => res.json())
-                .then(data => {
-                    if(data.success) {
-                        closeModal('otp-modal');
-                        
-                        // Automatically share keys back to the UI
-                        if (data.algo === 'TripleDES') {
-                            document.getElementById('dec-algo').value = 'TripleDES';
-                            handleAlgoChange('dec');
-                            document.getElementById('dec-key-1').value = data.keys[0];
-                            document.getElementById('dec-key-2').value = data.keys[1];
-                            document.getElementById('dec-key-3').value = data.keys[2];
-                        } else {
-                            document.getElementById('dec-algo').value = data.algo;
-                            handleAlgoChange('dec');
-                            document.getElementById('dec-key').value = data.keys[0];
-                        }
-                        
-                        showNotification("Keys successfully shared and verified!", "success");
-                        handleSuccessfulVerification(data.decrypted_data, 'decrypt');
-                    } else {
-                        showNotification(data.message, "error");
-                    }
-                })
-                .catch(() => showNotification("Decryption failed.", "error"));
+                proceedWithDecrypt(otpVal);
             }
         }
+
+        // Helper: encrypt after OTP verified
+        function proceedWithEncrypt(contactVal, otpVal) {
+            const algo = document.getElementById('enc-algo').value;
+            const textVal = document.getElementById('enc-text').value;
+            const fileInput = document.getElementById('enc-file');
+            const keys = (algo === 'TripleDES')
+                ? [document.getElementById('enc-key-1').value, document.getElementById('enc-key-2').value, document.getElementById('enc-key-3').value]
+                : [document.getElementById('enc-key').value];
+
+            if (fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: e.target.result, algo, filename: file.name });
+                };
+                reader.readAsDataURL(file);
+            } else {
+                sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: textVal, algo });
+            }
+        }
+
+        // Helper: decrypt after OTP verified
+        function proceedWithDecrypt(otpVal) {
+            const params = new URLSearchParams(globalThis.location.search);
+            const shareId = params.get('share') || globalThis.fakeShareId;
+
+            fetch('/api/verify-and-decrypt', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ share_id: shareId, otp: otpVal })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal('otp-modal');
+                    if (data.algo === 'TripleDES') {
+                        document.getElementById('dec-algo').value = 'TripleDES';
+                        handleAlgoChange('dec');
+                        document.getElementById('dec-key-1').value = data.keys[0];
+                        document.getElementById('dec-key-2').value = data.keys[1];
+                        document.getElementById('dec-key-3').value = data.keys[2];
+                    } else {
+                        document.getElementById('dec-algo').value = data.algo;
+                        handleAlgoChange('dec');
+                        document.getElementById('dec-key').value = data.keys[0];
+                    }
+                    showNotification('Keys successfully shared and verified!', 'success');
+                    handleSuccessfulVerification(data.decrypted_data, 'decrypt');
+                } else {
+                    showNotification(data.message, 'error');
+                }
+            })
+            .catch(() => showNotification('Decryption failed.', 'error'));
+        }
+
 
         function handleSuccessfulVerification(result, mode) {
             if (mode === 'encrypt') {
@@ -871,72 +1023,15 @@
             })
             .then(res => res.json())
             .then(data => {
-                if(data.success) {
+                if (data.success) {
                     closeModal('otp-modal');
                     globalThis.lastShareId = data.share_id;
                     handleSuccessfulVerification(data.encrypted_data, 'encrypt');
                 } else {
-                    showNotification(data.message, "error");
+                    showNotification(data.message, 'error');
                 }
             })
-            .catch(() => showNotification("Encryption failed on backend.", "error"));
-        }
-
-        function sendDirectEncryptionRequest(payload) {
-            fetch('/api/encrypt-direct', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if(data.success) {
-                    globalThis.lastShareId = data.share_id;
-                    handleSuccessfulVerification(data.encrypted_data, 'encrypt');
-                } else {
-                    showNotification(data.message, "error");
-                }
-            })
-            .catch(() => showNotification("Direct encryption failed.", "error"));
-        }
-
-        function signInWithGoogleForProcess() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    const user = result.user;
-                    closeModal('method-modal');
-                    
-                    const algo = document.getElementById('enc-algo').value;
-                    const textVal = document.getElementById('enc-text').value;
-                    const fileInput = document.getElementById('enc-file');
-                    let keys = (algo === 'TripleDES') 
-                        ? [document.getElementById('enc-key-1').value, document.getElementById('enc-key-2').value, document.getElementById('enc-key-3').value]
-                        : [document.getElementById('enc-key').value];
-
-                    if (fileInput.files.length > 0) {
-                        const file = fileInput.files[0];
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            sendDirectEncryptionRequest({
-                                contact: user.email,
-                                keys: keys,
-                                plaintext: e.target.result,
-                                algo: algo,
-                                filename: file.name
-                            });
-                        };
-                        reader.readAsDataURL(file);
-                    } else {
-                        sendDirectEncryptionRequest({
-                            contact: user.email,
-                            keys: keys,
-                            plaintext: textVal,
-                            algo: algo
-                        });
-                    }
-                })
-                .catch((error) => showNotification(handleFirebaseError(error), "error"));
+            .catch(() => showNotification('Encryption failed on backend.', 'error'));
         }
 
         // 6) Share Link Modal

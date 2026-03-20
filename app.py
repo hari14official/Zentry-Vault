@@ -28,41 +28,51 @@ encrypted_shares = {}   # Maps share_id -> file/text info, keys, and owner_conta
 otps_in_transit = {}    # Maps phone/email -> generated OTP
 
 # --- EMAIL CONFIG ---
-SENDER_EMAIL = os.getenv("SENDER_EMAIL", "your-email@gmail.com")
-SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "your-app-password")
+SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "")
 
 
 def _perform_smtp_send(recipient, subject, body):
-    """ Internal helper to perform raw SMTP send on port 465 with SSL. """
-    if "your-app-password" in SENDER_PASSWORD:
-        print(f"[SMTP] => SKIPPING: Real email credentials not configured in environment variables.")
+    """ Internal helper to perform SMTP send on port 587 with STARTTLS (Render-compatible). """
+    # Guard: check if credentials are configured
+    if not SENDER_EMAIL or not SENDER_PASSWORD:
+        print(f"[SMTP] => SKIPPING: SENDER_EMAIL or SENDER_PASSWORD env vars are NOT set on this server.")
         print(f"[SMTP] => LOG FOR {recipient}: {body}")
         return
 
     try:
         smtp_server = "smtp.gmail.com"
-        port = 465
+        port = 587  # STARTTLS port — works on Render free tier (port 465 SSL is often blocked)
         context = ssl.create_default_context()
-        
-        # Force IPv4 to avoid "Network is unreachable" errors often caused by IPv6 on cloud servers
+
+        # Force IPv4 to avoid "Network is unreachable" errors caused by IPv6 on cloud servers
         print(f"[SMTP] => Resolving {smtp_server} to IPv4...")
         addr_info = socket.getaddrinfo(smtp_server, port, socket.AF_INET, socket.SOCK_STREAM)
         ipv4_address = addr_info[0][4][0]
-        
-        print(f"[SMTP] => Connecting to {smtp_server} ({ipv4_address}):{port} (with 20s timeout)...")
-        with smtplib.SMTP_SSL(ipv4_address, port, context=context, timeout=20) as server:
+
+        print(f"[SMTP] => Connecting to {smtp_server} ({ipv4_address}):{port} via STARTTLS (30s timeout)...")
+        with smtplib.SMTP(ipv4_address, port, timeout=30) as server:
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
             server.login(SENDER_EMAIL, SENDER_PASSWORD)
-            
+
             msg = MIMEMultipart()
             msg['From'] = SENDER_EMAIL
             msg['To'] = recipient
             msg['Subject'] = subject
             msg.attach(MIMEText(body, 'plain'))
-            
+
             server.send_message(msg)
         print(f"[SMTP] => SUCCESS: Email sent to {recipient}!")
+    except smtplib.SMTPAuthenticationError:
+        print(f"[SMTP] => FAILED: Authentication error. Check SENDER_EMAIL and SENDER_PASSWORD (use an App Password, not your Gmail login password).")
+        traceback.print_exc()
+    except smtplib.SMTPException as e:
+        print(f"[SMTP] => FAILED (SMTP error): {str(e)}")
+        traceback.print_exc()
     except Exception as e:
-        print(f"[SMTP] => FAILED: {str(e)}")
+        print(f"[SMTP] => FAILED (general error): {str(e)}")
         traceback.print_exc()
 
 def mock_send_email(email, otp, purpose='encrypt'):
