@@ -402,66 +402,14 @@
 
     <!-- Modals go here -->
     
-    <!-- reCAPTCHA invisible container for Firebase Phone Auth -->
-    <div id="recaptcha-container"></div>
-
-    <!-- Method Selection Modal -->
-    <div id="method-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] hidden backdrop-blur-sm">
-        <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800">
-            <div class="p-8">
-                <h3 class="text-xl font-bold mb-6 text-center" id="method-title">Encrypt using</h3>
-                <div class="space-y-4">
-                    <button onclick="promptContactInfo('phone')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
-                        <!-- Phone icon -->
-                        <svg class="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                        </svg>
-                        Continue with Phone Number
-                    </button>
-                    <button onclick="promptContactInfo('email')" class="w-full flex items-center justify-center gap-3 bg-white border border-gray-200 rounded-lg py-3 px-4 text-sm font-semibold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors">
-                        <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-                        Continue with Email/Password
-                    </button>
-                </div>
-            </div>
-            <div class="bg-gray-50 px-6 py-4 text-center border-t border-gray-100">
-                <button onclick="closeModal('method-modal')" class="text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">Cancel</button>
-            </div>
-        </div>
-    </div>
-
     <!-- Contact Info Modal -->
     <div id="contact-modal" class="fixed inset-0 bg-black/80 flex items-center justify-center z-[110] hidden backdrop-blur-sm">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden text-gray-800 p-8">
-            <h3 class="text-lg font-bold mb-2 text-center" id="contact-title">Enter details</h3>
-            <p class="text-xs text-gray-500 text-center mb-6" id="contact-desc">We will send a 6-digit OTP to verify.</p>
+            <h3 class="text-lg font-bold mb-2 text-center" id="contact-title">Enter Email Address</h3>
+            <p class="text-xs text-gray-500 text-center mb-6" id="contact-desc">We will send a 6-digit OTP to your inbox.</p>
 
-            <!-- Email input (shown for email mode) -->
             <div id="contact-email-row">
                 <input type="email" id="contact-input" class="w-full border border-gray-300 rounded p-2 text-sm mb-4 outline-none focus:border-blue-500" placeholder="name@company.com">
-            </div>
-
-            <!-- Phone input (shown for phone mode) -->
-            <div id="contact-phone-row" class="hidden mb-4">
-                <div class="flex gap-2 items-center">
-                    <div class="flex items-center border border-gray-300 rounded px-3 py-2 bg-gray-50 gap-1 shrink-0">
-                        <span class="text-lg">🇮🇳</span>
-                        <select id="country-code" class="text-sm font-semibold text-gray-700 bg-transparent outline-none cursor-pointer">
-                            <option value="+91">+91</option>
-                            <option value="+1">+1</option>
-                            <option value="+44">+44</option>
-                            <option value="+61">+61</option>
-                            <option value="+65">+65</option>
-                            <option value="+971">+971</option>
-                            <option value="+60">+60</option>
-                            <option value="+49">+49</option>
-                            <option value="+33">+33</option>
-                            <option value="+81">+81</option>
-                        </select>
-                    </div>
-                    <input type="tel" id="phone-input" class="flex-1 border border-gray-300 rounded p-2 text-sm outline-none focus:border-emerald-500" placeholder="9876543210" maxlength="15">
-                </div>
-                <p class="text-[11px] text-gray-400 mt-1.5 ml-1">Enter your number without the country code.</p>
             </div>
 
             <div class="flex gap-2">
@@ -585,16 +533,14 @@
         function startEncryptProcess() {
             if (!validateFields('enc')) return;
             currentActiveFlow = 'encrypt';
-            document.getElementById('method-title').innerText = "Encrypt using";
-            showModal('method-modal');
+            promptContactInfo('email');
         }
 
         // 2) Start Decrypt
         function startDecryptProcess() {
             if (!validateFields('dec')) return;
             currentActiveFlow = 'decrypt';
-            document.getElementById('method-title').innerText = "Decrypt using";
-            showModal('method-modal');
+            promptContactInfo('email');
         }
 
         function validateFields(prefix) {
@@ -723,169 +669,23 @@
             });
         }
 
-        // 3) Select Method (Phone/Email)
+        // 3) Select Method (Email only)
         function promptContactInfo(mode) {
             selectedContactMode = mode;
-            closeModal('method-modal');
-            const emailRow = document.getElementById('contact-email-row');
-            const phoneRow = document.getElementById('contact-phone-row');
-            const sendBtn = document.getElementById('send-otp-btn');
-
-            if (mode === 'phone') {
-                document.getElementById('contact-title').innerText = 'Enter Phone Number';
-                document.getElementById('contact-desc').innerText = 'We will send a 6-digit OTP via SMS.';
-                emailRow.classList.add('hidden');
-                phoneRow.classList.remove('hidden');
-                sendBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
-                sendBtn.classList.add('bg-emerald-600', 'hover:bg-emerald-700');
-            } else {
-                document.getElementById('contact-title').innerText = 'Enter Email Address';
-                document.getElementById('contact-desc').innerText = 'We will send a 6-digit OTP to verify.';
-                emailRow.classList.remove('hidden');
-                phoneRow.classList.add('hidden');
-                sendBtn.classList.remove('bg-emerald-600', 'hover:bg-emerald-700');
-                sendBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
-            }
             showModal('contact-modal');
         }
 
-        // Firebase Phone Auth confirmation result holder
-        let phoneConfirmationResult = null;
-
-        // Helper: setup invisible reCAPTCHA (only once)
-        function setupRecaptcha() {
-            if (!globalThis.recaptchaVerifier) {
-                globalThis.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                    size: 'invisible',
-                    callback: () => {}
-                });
-            }
-        }
-
-        // 3a) Request OTP via Phone (Firebase Phone Auth)
-        function requestOtpPhone(btn) {
-            const countryCode = document.getElementById('country-code').value;
-            const phoneNum = document.getElementById('phone-input').value.trim();
-            if (!phoneNum) {
-                showNotification('Please enter your phone number.', 'error');
-                return;
-            }
-            const fullNumber = countryCode + phoneNum;
-
-            btn.disabled = true;
-            btn.innerText = 'Sending...';
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            showNotification('Sending OTP via SMS...', 'info');
-
-            setupRecaptcha();
-            auth.signInWithPhoneNumber(fullNumber, globalThis.recaptchaVerifier)
-                .then((confirmationResult) => {
-                    phoneConfirmationResult = confirmationResult;
-                    // Store phone as contact for downstream usage
-                    document.getElementById('contact-input').value = fullNumber;
-                    closeModal('contact-modal');
-                    showModal('otp-modal');
-                    showNotification('6-digit OTP sent to ' + fullNumber + ' via SMS!', 'success');
-                })
-                .catch((err) => {
-                    showNotification('SMS failed: ' + (err.message || 'Please try again.'), 'error');
-                    // Reset reCAPTCHA on failure so it can be retried
-                    globalThis.recaptchaVerifier.render().then((id) => grecaptcha.reset(id));
-                    btn.disabled = false;
-                    btn.innerText = 'Send OTP';
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                });
-        }
-
-        // 3b) Request OTP via Email (Backend SMTP)
-        function requestOtpEmail(btn) {
-            const val = document.getElementById('contact-input').value.trim();
-            if (!val) {
-                showNotification('Please enter your email address.', 'error');
-                return;
-            }
-
-            btn.disabled = true;
-            btn.innerText = 'Sending...';
-            btn.classList.add('opacity-50', 'cursor-not-allowed');
-            showNotification('Requesting OTP...', 'info');
-
-            fetch('/api/request-otp', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contact: val })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    closeModal('contact-modal');
-                    showModal('otp-modal');
-                    showNotification('6-digit OTP sent to your Gmail inbox!', 'success');
-                } else {
-                    showNotification(data.message, 'error');
-                    btn.disabled = false;
-                    btn.innerText = 'Send OTP';
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-            })
-            .catch(() => {
-                showNotification('Backend connection failed.', 'error');
-                btn.disabled = false;
-                btn.innerText = 'Send OTP';
-                btn.classList.remove('opacity-50', 'cursor-not-allowed');
-            });
-
-            setTimeout(() => {
-                if (btn) {
-                    btn.disabled = false;
-                    btn.innerText = 'Send OTP';
-                    btn.classList.remove('opacity-50', 'cursor-not-allowed');
-                }
-            }, 30000);
-        }
-
-        // 3) Dispatcher: routes to phone or email OTP sender
+        // 3) Dispatcher: routes to email OTP sender
         function requestOtp(btn) {
-            if (selectedContactMode === 'phone') {
-                requestOtpPhone(btn);
-            } else {
-                requestOtpEmail(btn);
-            }
+            requestOtpEmail(btn);
         }
 
-        // 4) Verify OTP and Finalize Process
+        // 4) Verify OTP and Finalize Process (Email only)
         function verifyOtp() {
             const otpVal = document.getElementById('otp-input').value;
             if (otpVal.length < 6) return;
 
-            // --- Phone OTP path: verify via Firebase ---
-            if (selectedContactMode === 'phone' && phoneConfirmationResult) {
-                const verifyBtn = document.getElementById('otp-verify-btn');
-                verifyBtn.disabled = true;
-                verifyBtn.innerText = 'Verifying...';
-                phoneConfirmationResult.confirm(otpVal)
-                    .then((result) => {
-                        closeModal('otp-modal');
-                        verifyBtn.disabled = false;
-                        verifyBtn.innerText = 'Verify';
-                        // Use phone number as contact, then proceed with encryption/decryption
-                        const contactVal = result.user.phoneNumber;
-                        document.getElementById('contact-input').value = contactVal;
-                        if (currentActiveFlow === 'encrypt') {
-                            proceedWithEncrypt(contactVal, otpVal);
-                        } else {
-                            proceedWithDecrypt(otpVal);
-                        }
-                    })
-                    .catch((err) => {
-                        verifyBtn.disabled = false;
-                        verifyBtn.innerText = 'Verify';
-                        showNotification('Invalid OTP. Please try again.', 'error');
-                    });
-                return;
-            }
-
-            // --- Email OTP path: verify via backend ---
+            // Email OTP path: verify via backend 
             if (currentActiveFlow === 'encrypt') {
                 const contactVal = document.getElementById('contact-input').value;
                 const algo = document.getElementById('enc-algo').value;
