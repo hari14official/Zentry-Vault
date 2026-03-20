@@ -3,22 +3,19 @@ from flask_cors import CORS
 import pyotp
 import uuid
 import os
-import smtplib
-import ssl
 import threading
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-import base64
-from Crypto.Cipher import AES, DES3, ARC4, Salsa20
-from Crypto.Util.Padding import pad, unpad
-import hashlib
 import traceback
-import socket
+import requests as http_requests
+from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 # Load environment variables from .env
 load_dotenv()
 
+import base64
+from Crypto.Cipher import AES, DES3, ARC4, Salsa20
+from Crypto.Util.Padding import pad, unpad
+import hashlib
 
 app = Flask(__name__)
 CORS(app)
@@ -27,56 +24,66 @@ CORS(app)
 encrypted_shares = {}   # Maps share_id -> file/text info, keys, and owner_contact (user 1)
 otps_in_transit = {}    # Maps phone/email -> generated OTP
 
-# --- EMAIL CONFIG ---
-SENDER_EMAIL = os.getenv("SENDER_EMAIL", "")
-SENDER_PASSWORD = os.getenv("SENDER_PASSWORD", "")
+# --- EMAIL CONFIG (Gmail API over HTTPS – uses your existing Google account, no new signup) ---
+GMAIL_CLIENT_ID     = os.getenv("GMAIL_CLIENT_ID", "")
+GMAIL_CLIENT_SECRET = os.getenv("GMAIL_CLIENT_SECRET", "")
+GMAIL_REFRESH_TOKEN = os.getenv("GMAIL_REFRESH_TOKEN", "")
+SENDER_EMAIL        = os.getenv("SENDER_EMAIL", "haridonsines2005@gmail.com")
+SENDER_NAME         = os.getenv("SENDER_NAME", "Zentry Vault")
 
 
-def _perform_smtp_send(recipient, subject, body):
-    """ Internal helper to perform SMTP send on port 587 with STARTTLS (Render-compatible). """
-    # Guard: check if credentials are configured
-    if not SENDER_EMAIL or not SENDER_PASSWORD:
-        print(f"[SMTP] => SKIPPING: SENDER_EMAIL or SENDER_PASSWORD env vars are NOT set on this server.")
-        print(f"[SMTP] => LOG FOR {recipient}: {body}")
+def _get_gmail_access_token() -> str:
+    """Exchange the long-lived refresh token for a short-lived access token."""
+    resp = http_requests.post(
+        "https://oauth2.googleapis.com/token",
+        data={
+            "client_id":     GMAIL_CLIENT_ID,
+            "client_secret": GMAIL_CLIENT_SECRET,
+            "refresh_token": GMAIL_REFRESH_TOKEN,
+            "grant_type":    "refresh_token",
+        },
+        timeout=10
+    )
+    resp.raise_for_status()
+    return resp.json()["access_token"]
+
+
+def _perform_send(recipient: str, subject: str, body: str):
+    """Send email via Gmail API (HTTPS port 443 – always open on Render, no new accounts needed)."""
+    if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET or not GMAIL_REFRESH_TOKEN:
+        print("[EMAIL] => SKIPPING: GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET / GMAIL_REFRESH_TOKEN not set.")
+        print(f"[EMAIL] => LOG FOR {recipient}: {body}")
         return
 
     try:
-        smtp_server = "smtp.gmail.com"
-        port = 587  # STARTTLS port — works on Render free tier (port 465 SSL is often blocked)
-        context = ssl.create_default_context()
+        print(f"[EMAIL] => Sending to {recipient} via Gmail API...")
 
-        # Force IPv4 to avoid "Network is unreachable" errors caused by IPv6 on cloud servers
-        print(f"[SMTP] => Resolving {smtp_server} to IPv4...")
-        addr_info = socket.getaddrinfo(smtp_server, port, socket.AF_INET, socket.SOCK_STREAM)
-        ipv4_address = addr_info[0][4][0]
+        # Build a MIME email and base64-encode it (Gmail API requires this format)
+        msg = MIMEText(body, "plain")
+        msg["To"]      = recipient
+        msg["From"]    = f"{SENDER_NAME} <{SENDER_EMAIL}>"
+        msg["Subject"] = subject
+        raw_message = base64.urlsafe_b64encode(msg.as_bytes()).decode()
 
-        print(f"[SMTP] => Connecting to {smtp_server} ({ipv4_address}):{port} via STARTTLS (30s timeout)...")
-        with smtplib.SMTP(ipv4_address, port, timeout=30) as server:
-            server.ehlo()
-            server.starttls(context=context)
-            server.ehlo()
-            server.login(SENDER_EMAIL, SENDER_PASSWORD)
+        access_token = _get_gmail_access_token()
 
-            msg = MIMEMultipart()
-            msg['From'] = SENDER_EMAIL
-            msg['To'] = recipient
-            msg['Subject'] = subject
-            msg.attach(MIMEText(body, 'plain'))
-
-            server.send_message(msg)
-        print(f"[SMTP] => SUCCESS: Email sent to {recipient}!")
-    except smtplib.SMTPAuthenticationError:
-        print(f"[SMTP] => FAILED: Authentication error. Check SENDER_EMAIL and SENDER_PASSWORD (use an App Password, not your Gmail login password).")
-        traceback.print_exc()
-    except smtplib.SMTPException as e:
-        print(f"[SMTP] => FAILED (SMTP error): {str(e)}")
-        traceback.print_exc()
+        response = http_requests.post(
+            "https://gmail.googleapis.com/gmail/v1/users/me/messages/send",
+            headers={"Authorization": f"Bearer {access_token}"},
+            json={"raw": raw_message},
+            timeout=15
+        )
+        if response.status_code == 200:
+            print(f"[EMAIL] => SUCCESS: id={response.json().get('id')}")
+        else:
+            print(f"[EMAIL] => FAILED: HTTP {response.status_code} – {response.text}")
     except Exception as e:
-        print(f"[SMTP] => FAILED (general error): {str(e)}")
+        print(f"[EMAIL] => FAILED: {str(e)}")
         traceback.print_exc()
+
 
 def mock_send_email(email, otp, purpose='encrypt'):
-    """ Wraps the actual SMTP sending in a thread to prevent blocking the UI. """
+    """ Wraps the actual email sending in a thread to prevent blocking the UI. """
     threading.Thread(target=send_email_task, args=(email, otp, purpose)).start()
 
 def send_email_task(email, otp, purpose='encrypt'):
@@ -86,17 +93,17 @@ def send_email_task(email, otp, purpose='encrypt'):
     else:
         msg_body = f"This is the mail from Zentry Vault to Encrypt your data.\n\nYour OTP for Encryption is: {otp}\n\nNote: don't share this to anyone."
         subject = "Zentry Vault: Encryption OTP"
-    
-    _perform_smtp_send(email, subject, msg_body)
+
+    _perform_send(email, subject, msg_body)
 
 def mock_send_notification_email(email, event_type):
-    """ Wraps the actual notification SMTP sending in a thread. """
+    """ Wraps the actual notification email sending in a thread. """
     threading.Thread(target=send_notification_email_task, args=(email, event_type)).start()
 
 def send_notification_email_task(email, event_type):
     subject = "Zentry Vault Account Alert"
     content = "Welcome! Your Zentry Vault account has been created successfully." if event_type == 'signup' else "Security Alert: New login detected."
-    _perform_smtp_send(email, subject, content)
+    _perform_send(email, subject, content)
 
 @app.route('/api/request-otp', methods=['POST'])
 def request_otp():

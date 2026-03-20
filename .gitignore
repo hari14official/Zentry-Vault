@@ -13,3 +13,6 @@ ENV/
 # Misc
 .DS_Store
 .vscode/
+
+# One-time helper scripts (contain secrets)
+get_gmail_token.py

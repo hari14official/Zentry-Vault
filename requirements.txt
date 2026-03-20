@@ -3,3 +3,4 @@ flask-cors
 pyotp
 pycryptodome
 python-dotenv
+requests
