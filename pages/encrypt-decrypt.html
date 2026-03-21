@@ -676,6 +676,46 @@
         }
 
         // 3) Dispatcher: routes to email OTP sender
+        function requestOtpEmail(btn) {
+            const email = document.getElementById('contact-input').value.trim();
+            if (!email) return showNotification("Please enter your email to receive OTP.", "error");
+
+            if (btn) {
+                btn.disabled = true;
+                btn.innerText = "Requesting...";
+                btn.classList.add('opacity-50');
+            }
+
+            fetch('/api/request-otp', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contact: email })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    closeModal('contact-modal');
+                    showModal('otp-modal');
+                    showNotification(data.message, "success");
+                } else {
+                    showNotification(data.message, "error");
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerText = "Send OTP";
+                        btn.classList.remove('opacity-50');
+                    }
+                }
+            })
+            .catch(() => {
+                showNotification("OTP request failed. Check server status.", "error");
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerText = "Send OTP";
+                    btn.classList.remove('opacity-50');
+                }
+            });
+        }
+
         function requestOtp(btn) {
             requestOtpEmail(btn);
         }
@@ -919,6 +959,16 @@
                         }
                     });
             }
+
+            // Pre-fill email if user is authenticated
+            globalThis.addEventListener('firebase-ready', () => {
+                auth.onAuthStateChanged((user) => {
+                    if (user && user.email) {
+                        const contactInput = document.getElementById('contact-input');
+                        if (contactInput) contactInput.value = user.email;
+                    }
+                });
+            });
         });
 
         function requestOtpForKeys(btn) {
