@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Viewer - Zentry Vault</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        background: '#030305',
+                        accent: '#4f8ef5',
+                        cardBg: '#1a1a1c',
+                        cardHover: '#242426'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #030305; color: white; margin: 0; overflow-x: hidden; height: 100vh; display: flex; flex-direction: column; }
+        .glass-nav { 
+            background: rgba(3, 3, 5, 0.6); 
+            backdrop-filter: blur(12px); 
+            -webkit-backdrop-filter: blur(12px); 
+            border-bottom: 1px solid rgba(255,255,255,0.05); 
+        }
+        .logo-hover { transition: transform 0.2s ease; cursor: pointer; }
+        .logo-hover:hover { transform: translateY(-1px); }
+        .nav-link-anim { position: relative; padding: 8px 0; transition: color 0.2s ease; opacity: 0.9; color: #a1a1aa; }
+        .nav-link-anim:hover, .nav-link-anim.active { color: #ffffff; opacity: 1; text-shadow: 0 0 10px rgba(255,255,255,0.4); }
+        .nav-link-anim::after {
+            content: ''; position: absolute; bottom: 0; left: 0; width: 0; height: 2px;
+            background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
+        }
+        .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #030305; }
+        ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #tool-iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: transparent;
+        }
+        
+    </style>
+</head>
+<body class="bg-background text-white antialiased">
+    <!-- Transparent Sticky Navbar -->
+    <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
+        <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-3 text-2xl font-bold logo-hover" onclick="window.location.href='dashboard.html'">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow-lg">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Zentry Vault
+            </div>
+            
+            <nav class="hidden md:flex gap-8">
+                <a href="../index.html" class="nav-link-anim text-sm font-medium">Home</a>
+                <a href="../index.html#about" class="nav-link-anim text-sm font-medium">About us</a>
+                <a href="dashboard.html" id="nav-dashboard" class="nav-link-anim active text-sm font-medium">Dashboard</a>
+                <a href="../index.html#features" class="nav-link-anim text-sm font-medium">Features</a>
+                <a href="learn-more.html" class="nav-link-anim text-sm font-medium">Services</a>
+                <a href="contact-us.html" class="nav-link-anim text-sm font-medium">Contact us</a>
+            </nav>
+
+            <div class="flex items-center gap-5" id="auth-buttons">
+                <!-- If the user is on dashboard, they are already signed in. We just show logout by default -->
+                <button onclick="logout()" class="text-gray-400 hover:text-white text-sm font-semibold transition-colors">Logout</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Section -->
+    <main class="pt-32 pb-0 flex flex-col h-screen w-full relative">
+        <!-- Header text area -->
+        <div class="w-full max-w-[1400px] mx-auto px-6 md:px-12 xl:px-32">
+            <a href="dashboard.html" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition-colors mb-2 w-fit">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+                Back to Dashboard
+            </a>
+            <div class="max-w-4xl mx-auto flex flex-col items-center text-center border-b border-white/10 mb-4 pb-4">
+                <div style="font-size: 2.25rem; font-weight: normal; margin-bottom: 0.5rem;" class="text-gray-200 flex items-center justify-center gap-4">
+                    <span id="tool-title" class="tracking-tight">Loading Tool...</span>
+                    <!-- Heart Icon -->
+                    <div onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
+                        <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- iframe container -->
+        <div class="flex-1 w-full relative bg-[#1a1a1a]">
+            <iframe id="tool-iframe" sandbox="allow-scripts allow-same-origin allow-popups allow-forms" src="about:blank" class="absolute inset-0 w-full h-full border-none"></iframe>
+        </div>
+    </main>
+
+    <script>
+        function logout() {
+            localStorage.removeItem('signedIn');
+            window.location.href = '../index.html';
+        }
+
+        // Just a check to prevent unauthorized access
+        const isSignedIn = localStorage.getItem('signedIn') === 'true';
+        if (!isSignedIn) {
+            window.location.href = '../index.html';
+        }
+
+        function toggleFavorite(element) {
+            const heartSvg = element.querySelector('svg');
+            if (heartSvg.classList.contains('text-red-500')) {
+                heartSvg.classList.remove('text-red-500');
+                heartSvg.classList.add('text-gray-500');
+            } else {
+                heartSvg.classList.remove('text-gray-500');
+                heartSvg.classList.add('text-red-500');
+            }
+        }
+
+        // Parse query params to load tool
+        const params = new URLSearchParams(window.location.search);
+        const toolId = params.get('tool');
+
+        if (toolId) {
+            // Un-slugify title for the header roughly
+            let title = toolId.replace(/-/g, ' ');
+            title = title.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            document.getElementById('tool-title').innerText = title;
+            
+            // For 78 complex IT tools, embed them directly using an iframe.
+            const iframe = document.getElementById('tool-iframe');
+            
+            iframe.src = `https://it-tools.tech/${toolId}`;
+
+            // Error fallback in case of iframe block
+            iframe.onerror = function() {
+                document.getElementById('tool-title').innerText = "Tool may be unavailable (embedding blocked)";
+            };
+        } else {
+            document.getElementById('tool-title').innerText = "Tool Not Found";
+        }
+
+    </script>
+</body>
+</html>
