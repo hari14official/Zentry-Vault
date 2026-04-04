@@ -84,7 +84,7 @@ Zentry Vault is a cutting-edge, high-performance security platform designed to p
 
 ## ⚖️ Security Notice
 
-Zentry Vault provides both modern (AES) and legacy (TripleDES, RC4) cryptography. While legacy algorithms are included for research and compatibility, we **highly recommend** using AES-256 for all sensitive data.
+Zentry Vault provides both modern (AES  & DES) and legacy (TripleDES, RC4) cryptography. While legacy algorithms are included for research and compatibility, we **highly recommend** using AES-256 for all sensitive data.
 
 ## 📄 License
 
