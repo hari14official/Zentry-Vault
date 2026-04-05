@@ -12,13 +12,11 @@
                 extend: {
                     colors: {
                         background: '#1a1a1a', 
-                        panelBg: '#2a2a2a', 
-                        inputBg: '#333333', 
-                        accent: '#4f8ef5',
+                        panelBg: '#262626', 
                     },
                     fontFamily: {
                         sans: ['Inter', 'sans-serif'],
-                        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', "Liberation Mono", "Courier New", 'monospace'],
+                        mono: ['ui-monospace', 'monospace'],
                     }
                 }
             }
@@ -40,48 +38,27 @@
             background-color: #4f8ef5; transition: width 0.3s ease; border-radius: 2px;
         }
         .nav-link-anim:hover::after, .nav-link-anim.active::after { width: 100%; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #1a1a1a; }
-        ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .header-title { font-weight: normal; font-size: 2.25rem; line-height: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; margin-top: 1rem; width: 100%; border-bottom: none; }
+        .header-title { font-weight: 500; font-size: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
         
-        .cyber-textarea {
-            width: 100%;
-            background-color: #333333;
-            color: #d4d4d4;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            padding: 12px;
-            font-size: 13px;
-            font-family: inherit; 
-            outline: none;
-            resize: vertical;
-            min-height: 120px;
-            transition: all 0.2s;
+        .format-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
         }
-        .cyber-textarea:focus {
-            border-color: #555;
-            background-color: #3a3a3a;
-        }
-        .cyber-label {
-            display: block;
-            font-size: 13px;
-            color: #e5e5e5;
-            margin-bottom: 6px;
-            margin-top: 16px;
-        }
-        .cyber-label:first-child { margin-top: 0; }
-        .resize-icon { position: absolute; bottom: 8px; right: 8px; pointer-events: none; color: #737373; opacity: 0.5; }
+        .format-label { color: #525252; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; min-width: 120px; }
+        .format-value { color: #e5e5e5; font-size: 13px; font-family: 'ui-monospace', monospace; flex: 1; margin: 0 1.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-align: left;}
+        .copy-link { color: #525252; font-size: 11px; font-weight: 600; cursor: pointer; transition: color 0.2s; }
+        .copy-link:hover { color: #4f8ef5; }
     </style>
-    
 </head>
 <body class="bg-background text-white antialiased flex flex-col min-h-screen">
     <!-- Navbar -->
     <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
         <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center">
-            <div class="flex items-center gap-3 text-2xl font-bold cursor-pointer hover:transform hover:-translate-y-[1px] transition-transform">
+            <div role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')globalThis.location.href='../index.html'" onclick="globalThis.location.href='../index.html'" class="flex items-center gap-3 text-2xl font-bold cursor-pointer hover:transform hover:-translate-y-[1px] transition-transform focus:outline-none">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow-lg">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
                     <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -105,54 +82,82 @@
     </header>
 
     <!-- Main Section -->
-    <main class="flex-grow pt-32 pb-20 px-6 md:px-12 xl:px-32 max-w-[1400px] mx-auto w-full">
-        <!-- Back Button inline -->
-        <div class="max-w-4xl mx-auto flex items-center mb-2">
-            <a href="dashboard.html" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition-colors w-fit font-semibold">
+    <main class="flex-grow pt-32 pb-20 px-6 md:px-12 xl:px-32 max-w-[1000px] mx-auto w-full text-center">
+        <!-- Back Link -->
+        <div class="flex items-center mb-10 text-left">
+            <a href="dashboard.html" class="text-gray-500 hover:text-white flex items-center gap-2 text-sm transition-colors font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Back to Dashboard
             </a>
         </div>
-        
-        <!-- Header text area -->
-        <div class="max-w-4xl mx-auto flex flex-col items-center text-center border-b border-white/10 mb-8 pb-4">
-            <div class="header-title text-gray-200 justify-center">
-                <span>Integer base converter</span>
-                <div onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
-                    <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-                </div>
+
+        <div class="header-title group justify-center">
+            <span>Integer base converter</span>
+            <div role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleFavorite(this)" onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors focus:outline-none">
+                <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
             </div>
-            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl mb-8">
-                Convert a number between different bases (decimal, hexadecimal, binary, octal, base64, ...)
-            </p>
         </div>
 
-        <div class="grid grid-cols-1 w-full max-w-4xl mx-auto items-start">
-            <!-- NATIVE UI PANEL (Old Tools Theme) -->
-            <div class="bg-panelBg rounded-md p-6 border border-transparent w-full">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    
-                    <div class="md:col-span-1">
-                        <label for="input-data" class="cyber-label">Your Input:</label>
-                        <div class="relative mb-2">
-                            <textarea id="input-data" class="cyber-textarea font-mono block" placeholder="Provide input..." spellcheck="false"></textarea>
-                            <svg class="resize-icon w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><path d="M10 0v10H0L10 0z" opacity="0.5"/></svg>
-                        </div>
+        <p class="text-gray-400 text-sm mb-12">Convert a number between different bases (decimal, hexadecimal, binary, octal, ...)</p>
+
+        <div class="max-w-2xl mx-auto space-y-8">
+            <!-- Input Area -->
+            <div class="flex flex-col md:flex-row gap-6">
+                <!-- Data Input -->
+                <div class="flex-grow bg-[#262626] rounded-md border border-white/5 overflow-hidden">
+                    <input type="text" id="num-input" oninput="convertBase()" placeholder="Enter a number..." class="w-full bg-transparent px-6 py-3 text-sm outline-none text-gray-200">
+                </div>
+                <!-- Base Selection -->
+                <div class="flex items-center bg-[#262626] rounded-md px-4 py-2 border border-white/5 min-w-[140px]">
+                    <span class="text-[10px] text-gray-500 mr-4 font-bold uppercase tracking-widest">Base :</span>
+                    <input type="number" id="base-input" value="10" min="2" max="36" oninput="convertBase()" class="bg-transparent border-none text-sm w-10 text-center focus:ring-0 outline-none">
+                    <div class="flex flex-col ml-2 border-l border-white/10 pl-2">
+                        <button onclick="adjustBase(1)" class="text-gray-500 hover:text-white">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                        <button onclick="adjustBase(-1)" class="text-gray-500 hover:text-white mt-1">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"></path></svg>
+                        </button>
                     </div>
-                    
-                    <div class="md:col-span-1 flex flex-col justify-start">
-                        <label for="output-data" class="cyber-label text-blue-400 font-semibold">Output Result:</label>
-                        <div class="relative mb-2 w-full">
-                            <textarea id="output-data" class="cyber-textarea font-mono text-gray-200 w-full" placeholder="Result will appear here..." spellcheck="false" readonly></textarea>
-                            <button onclick="copyResult()" class="absolute top-2 right-2 bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white text-[10px] font-bold px-3 py-1 rounded transition-all">COPY</button>
-                            <!-- QR specific div -->
-                            <div id="qr-container" class="mt-4 flex justify-center w-full bg-white p-4 rounded" style="display:none;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="md:col-span-2 mt-4">
-                        <button onclick="executeAction()" class="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-3 rounded-md transition-colors shadow-lg uppercase tracking-wide">Execute Tool</button>
-                    </div>
+                </div>
+            </div>
+
+            <!-- Results List -->
+            <div class="bg-[#262626] rounded-lg border border-white/5 p-6 text-left relative overflow-hidden">
+                <div id="live-indicator" class="absolute top-0 right-0 px-3 py-1 bg-blue-500/10 text-blue-400 text-[9px] font-bold tracking-widest uppercase hidden opacity-80">
+                    <span class="inline-block w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5 animate-pulse"></span>
+                    Live
+                </div>
+                <div id="results-label" class="text-[10px] text-gray-600 font-bold uppercase tracking-widest mb-4 opacity-50">Conversion Results</div>
+                <div class="format-row">
+                    <span class="format-label">Binary</span>
+                    <span id="base-2" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-2', this)" onclick="copyVal('base-2', this)" class="copy-link focus:outline-none">COPY</span>
+                </div>
+                <div class="format-row">
+                    <span class="format-label">Octal</span>
+                    <span id="base-8" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-8', this)" onclick="copyVal('base-8', this)" class="copy-link focus:outline-none">COPY</span>
+                </div>
+                <div class="format-row">
+                    <span class="format-label">Decimal</span>
+                    <span id="base-10" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-10', this)" onclick="copyVal('base-10', this)" class="copy-link focus:outline-none">COPY</span>
+                </div>
+                <div class="format-row">
+                    <span class="format-label">Hexadecimal</span>
+                    <span id="base-16" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-16', this)" onclick="copyVal('base-16', this)" class="copy-link focus:outline-none">COPY</span>
+                </div>
+                <div class="format-row">
+                    <span class="format-label">Base 32</span>
+                    <span id="base-32" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-32', this)" onclick="copyVal('base-32', this)" class="copy-link focus:outline-none">COPY</span>
+                </div>
+                <div class="format-row border-none">
+                    <span class="format-label">Base 36</span>
+                    <span id="base-36" class="format-value">0</span>
+                    <span role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')copyVal('base-36', this)" onclick="copyVal('base-36', this)" class="copy-link focus:outline-none">COPY</span>
                 </div>
             </div>
         </div>
@@ -221,6 +226,7 @@
         </div>
     </footer>
 
+
     <script>
         function toggleFavorite(element) {
             const heartSvg = element.querySelector('svg');
@@ -233,44 +239,125 @@
             }
         }
 
-        function logout() {
-            localStorage.removeItem('signedIn');
-            window.location.href = '../index.html';
-        }
-
-        function copyResult() {
-            const val = document.getElementById('output-data').value;
-            if (val) {
-                navigator.clipboard.writeText(val);
-                alert("Copied to clipboard!");
+        function adjustBase(delta) {
+            const input = document.getElementById('base-input');
+            const current = Number.parseInt(input.value, 10);
+            if (!Number.isNaN(current)) {
+                input.value = Math.max(2, Math.min(36, current + delta));
+                convertBase();
             }
-        }
-
-        function executeAction() {
-            const input = document.getElementById('input-data').value;
-            const outputEl = document.getElementById('output-data');
-            
-            if (document.getElementById('qr-container')) {
-                document.getElementById('qr-container').style.display = 'none';
-            }
+        } 
+        function convertBase() {
+            const inputField = document.getElementById('num-input');
+            const input = inputField.value.trim();
+            const baseInput = document.getElementById('base-input');
+            const base = Number.parseInt(baseInput.value, 10);
+            const liveIndicator = document.getElementById('live-indicator');
+            const resultsLabel = document.getElementById('results-label');
             
             if (!input) {
-                outputEl.value = "Error: Input is required.";
+                // Real-time mode: update with current Unix timestamp
+                const timestamp = Math.floor(Date.now() / 1000);
+                updateResults(timestamp);
+                if (liveIndicator) liveIndicator.classList.remove('hidden');
+                if (resultsLabel) resultsLabel.innerText = "Real-time Unix Timestamp";
+                return;
+            }
+
+            if (liveIndicator) liveIndicator.classList.add('hidden');
+            if (resultsLabel) resultsLabel.innerText = "Conversion Results";
+
+            // Strict validation for the selected base
+            const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+            const validChars = chars.substring(0, base);
+            const regex = new RegExp(`^[${validChars}]+$`, 'i');
+            
+            if (!regex.test(input)) {
+                showError("Invalid input for base " + base);
                 return;
             }
 
             try {
-                let result = '';
-                const val = parseInt(input); result = `Binary: ${val.toString(2)}\nOctal: ${val.toString(8)}\nHex: ${val.toString(16)}`;
-                
-                if (document.getElementById('qr-container') && document.getElementById('qr-container').innerHTML !== "") {
-                    document.getElementById('qr-container').style.display = 'flex';
+                // Use BigInt for parsing large integers without loss of precision
+                // Note: BigInt only supports bases prefix (0x, 0b, 0o) or decimals
+                // For custom base parsing, we still need a robust method
+                let decimalValue;
+                if (base === 10) {
+                    decimalValue = BigInt(input);
+                } else {
+                    // Manual base conversion for BigInt parsing
+                    decimalValue = parseToBigInt(input, base);
                 }
-                outputEl.value = result;
+                
+                updateResults(decimalValue);
             } catch (e) {
-                outputEl.value = "An error occurred during execution:\n" + e.message;
+                showError("Out of Range");
             }
         }
+
+        function parseToBigInt(str, base) {
+            const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+            let res = BigInt(0);
+            const b = BigInt(base);
+            for (let i = 0; i < str.length; i++) {
+                const val = chars.indexOf(str[i].toLowerCase());
+                if (val === -1 || val >= base) throw new Error("Invalid Digit");
+                res = res * b + BigInt(val);
+            }
+            return res;
+        }
+
+        function updateResults(value) {
+            const bigV = typeof value === 'bigint' ? value : BigInt(value);
+            document.getElementById('base-2').innerText = bigV.toString(2);
+            document.getElementById('base-8').innerText = bigV.toString(8);
+            document.getElementById('base-10').innerText = bigV.toString(10);
+            document.getElementById('base-16').innerText = bigV.toString(16).toUpperCase();
+            document.getElementById('base-32').innerText = bigV.toString(32).toUpperCase();
+            document.getElementById('base-36').innerText = bigV.toString(36).toUpperCase();
+        }
+
+
+        function resetResults() {
+            [2, 8, 10, 16, 32, 36].forEach(b => {
+                document.getElementById('base-' + b).innerText = "0";
+            });
+        }
+
+        function showError(msg) {
+            [2, 8, 10, 16, 32, 36].forEach(b => {
+                document.getElementById('base-' + b).innerText = msg;
+            });
+        }
+
+        function copyVal(id, btn) {
+            const val = document.getElementById(id).innerText;
+            if (!val || val === '0' || val.includes("Error")) return;
+            navigator.clipboard.writeText(val);
+            const original = btn.innerText;
+            btn.innerText = 'COPIED';
+            setTimeout(() => btn.innerText = original, 2000);
+        }
+
+        function logout() {
+            localStorage.removeItem('signedIn');
+            globalThis.location.href = "../index.html";
+        }
+
+        window.onload = () => {
+            const isSignedIn = localStorage.getItem('signedIn') === 'true';
+            if (!isSignedIn) globalThis.location.href = "../index.html";
+            
+            // Start real-time interval for timestamp mode
+            setInterval(() => {
+                if (!document.getElementById('num-input').value) {
+                    convertBase();
+                }
+            }, 1000);
+
+            // Initial conversion
+            convertBase();
+        };
     </script>
 </body>
 </html>

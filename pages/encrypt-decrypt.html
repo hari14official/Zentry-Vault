@@ -694,10 +694,18 @@
                 btn.classList.add('opacity-50');
             }
 
+            let toolName = "Text/File Encryption";
+            if (currentActiveFlow === 'encrypt') {
+                const fileInput = document.getElementById('enc-file');
+                if (fileInput && fileInput.files.length > 0) {
+                    toolName = fileInput.files[0].name;
+                }
+            }
+
             fetch('/api/request-otp', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ contact: email })
+                body: JSON.stringify({ contact: email, tool_name: toolName })
             })
             .then(res => res.json())
             .then(data => {
@@ -754,7 +762,7 @@
                             keys: keys,
                             plaintext: fileBase64,
                             algo: algo,
-                            filename: file.name
+                            file_name: file.name
                         });
                     };
                     reader.readAsDataURL(file);
@@ -764,7 +772,8 @@
                         otp: otpVal,
                         keys: keys,
                         plaintext: textVal,
-                        algo: algo
+                        algo: algo,
+                        file_name: "Text Content"
                     });
                 }
             } else {
@@ -785,11 +794,11 @@
                 const file = fileInput.files[0];
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: e.target.result, algo, filename: file.name });
+                    sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: e.target.result, algo, file_name: file.name });
                 };
                 reader.readAsDataURL(file);
             } else {
-                sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: textVal, algo });
+                sendEncryptionRequest({ contact: contactVal, otp: otpVal, keys, plaintext: textVal, algo, file_name: "Text Content" });
             }
         }
 

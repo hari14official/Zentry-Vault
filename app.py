@@ -48,18 +48,18 @@ def _get_gmail_access_token() -> str:
     return resp.json()["access_token"]
 
 
-def _perform_send(recipient: str, subject: str, body: str):
+def _perform_send(recipient: str, subject: str, body: str, is_html=False):
     """Send email via Gmail API (HTTPS port 443 – always open on Render, no new accounts needed)."""
     if not GMAIL_CLIENT_ID or not GMAIL_CLIENT_SECRET or not GMAIL_REFRESH_TOKEN:
         print("[EMAIL] => SKIPPING: GMAIL_CLIENT_ID / GMAIL_CLIENT_SECRET / GMAIL_REFRESH_TOKEN not set.")
-        print(f"[EMAIL] => LOG FOR {recipient}: {body}")
+        print(f"[EMAIL] => LOG FOR {recipient}: {body[:200]}...")
         return
 
     try:
         print(f"[EMAIL] => Sending to {recipient} via Gmail API...")
 
         # Build a MIME email and base64-encode it (Gmail API requires this format)
-        msg = MIMEText(body, "plain")
+        msg = MIMEText(body, "html" if is_html else "plain")
         msg["To"]      = recipient
         msg["From"]    = f"{SENDER_NAME} <{SENDER_EMAIL}>"
         msg["Subject"] = subject
@@ -82,19 +82,79 @@ def _perform_send(recipient: str, subject: str, body: str):
         traceback.print_exc()
 
 
-def mock_send_email(email, otp, purpose='encrypt'):
-    """ Wraps the actual email sending in a thread to prevent blocking the UI. """
-    threading.Thread(target=send_email_task, args=(email, otp, purpose)).start()
 
-def send_email_task(email, otp, purpose='encrypt'):
+EMAIL_BANNER_B64_CACHE = ""
+
+def get_banner_base64():
+    global EMAIL_BANNER_B64_CACHE
+    if not EMAIL_BANNER_B64_CACHE:
+        try:
+            banner_path = os.path.join(app.root_path, 'assets', 'images', 'email-banner.png')
+            if os.path.exists(banner_path):
+                with open(banner_path, "rb") as image_file:
+                    EMAIL_BANNER_B64_CACHE = base64.b64encode(image_file.read()).decode('utf-8')
+        except Exception as e:
+            print(f"[BANNER] => FAILED TO LOAD: {str(e)}")
+    return EMAIL_BANNER_B64_CACHE
+
+def mock_send_email(email, otp, purpose='encrypt', tool_name="Zentry Vault Tool"):
+    """ Wraps the actual email sending in a thread to prevent blocking the UI. """
+    threading.Thread(target=send_email_task, args=(email, otp, purpose, tool_name)).start()
+
+def send_email_task(email, otp, purpose='encrypt', tool_name="Zentry Vault Tool"):
+    banner_base64 = get_banner_base64()
+    img_html = f'<div style="text-align: center; margin-bottom: 30px;"><img src="data:image/png;base64,{banner_base64}" alt="Zentry Vault" style="width: 100%; max-width: 600px; height: auto; display: block; margin: 0 auto; border-radius: 8px;"></div>' if banner_base64 else ""
+
     if purpose == 'share-access':
-        msg_body = f"A user is requesting access to your encrypted keys in Zentry Vault.\n\nYour OTP for granting access is: {otp}\n\nIMPORTANT: Only share this code if you trust the person requesting access. Do not share this with anyone else."
+        # Decrypt Template
+        msg_body = f"""
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+            {img_html}
+            <p style="font-size: 16px;">Dear User,</p>
+            <p style="font-size: 16px;">A user is requesting access to your encrypted keys in Zentry Vault. <strong>{tool_name}</strong> security tool. To complete this action and ensure the security of your account/data, please use the following One-Time Password (OTP) valid for the next 5 minutes:</p>
+            
+            <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+                <span style="font-size: 28px; font-weight: 800; color: #4f8ef5; letter-spacing: 4px;">🔑Verification Code: {otp}</span>
+            </div>
+            
+            <p style="font-size: 15px;">Please enter this code directly into the application prompt. Do not share this code with anyone. Our security team will never ask for your OTP.</p>
+            <p style="font-size: 15px;">⚠️<strong>IMPORTANT: Only share this code if you trust the person requesting access.</strong> 🚫Do not share this with anyone else.</p>
+            
+            <p style="font-size: 15px; color: #64748b; margin-top: 25px;">If you did not initiate this action, please ignore this email and secure your account immediately.</p>
+            
+            <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #edf2f7; text-align: center; color: #718096; font-size: 13px;">
+                <p style="font-weight: 700; color: #1a202c; margin-bottom: 5px;">Zentry Vault</p>
+                <p>If you require additional assistance, our support team is always available to help at <a href="mailto:support@zentryvault.com" style="color: #4f8ef5; text-decoration: none;">support@zentryvault.com</a> or through the support page on the website.</p>
+                <p style="margin-top: 15px; font-weight: 600;">Thank you,<br>The Zentry Vault Team</p>
+            </div>
+        </div>
+        """
         subject = "Zentry Vault: Key Access OTP"
     else:
-        msg_body = f"This is the mail from Zentry Vault to Encrypt your data.\n\nYour OTP for Encryption is: {otp}\n\nNote: don't share this to anyone."
+        # Encrypt Template
+        msg_body = f"""
+        <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 25px; border: 1px solid #e2e8f0; border-radius: 12px; background: #ffffff;">
+            {img_html}
+            <p style="font-size: 16px;">Dear User,</p>
+            <p style="font-size: 16px;">A request was made to Encrypt content using the <strong>{tool_name}</strong> security tool. To complete this action and ensure the security of your account/data, please use the following One-Time Password (OTP) valid for the next 5 minutes:</p>
+            
+            <div style="background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; text-align: center; margin: 25px 0;">
+                <span style="font-size: 20px; font-weight: 800; color: #4f8ef5; letter-spacing: 4px;">🔑Verification Code: {otp}</span>
+            </div>
+            
+            <p style="font-size: 15px;">Please enter this code directly into the application prompt. 🚫Do not share this code with anyone. Our security team will never ask for your OTP.</p>
+            <p style="font-size: 15px; color: #64748b; margin-top: 25px;">⚠️If you did not initiate this action, please ignore this email and secure your account immediately.</p>
+            
+            <div style="margin-top: 35px; padding-top: 20px; border-top: 1px solid #edf2f7; text-align: center; color: #718096; font-size: 13px;">
+                <p style="font-weight: 700; color: #1a202c; margin-bottom: 5px;">Zentry Vault</p>
+                <p>If you require additional assistance, our support team is always available to help at <a href="mailto:support@zentryvault.com" style="color: #4f8ef5; text-decoration: none;">support@zentryvault.com</a> or through the support page on the website.</p>
+                <p style="margin-top: 15px; font-weight: 600;">Thank you,<br>The Zentry Vault Team</p>
+            </div>
+        </div>
+        """
         subject = "Zentry Vault: Encryption OTP"
 
-    _perform_send(email, subject, msg_body)
+    _perform_send(email, subject, msg_body, is_html=True)
 
 def mock_send_notification_email(email, event_type):
     """ Wraps the actual notification email sending in a thread. """
@@ -109,11 +169,12 @@ def send_notification_email_task(email, event_type):
 def request_otp():
     data = request.json
     contact_val = data.get('contact') 
+    tool_name = data.get('tool_name', 'Zentry Vault Tool')
     secret = pyotp.random_base32()
     totp = pyotp.TOTP(secret, interval=300)
     otp = totp.now()
     otps_in_transit[contact_val] = {'otp': otp, 'secret': secret}
-    mock_send_email(contact_val, otp, purpose='encrypt')
+    mock_send_email(contact_val, otp, purpose='encrypt', tool_name=tool_name)
     return jsonify({"success": True, "message": "OTP sent successfully"})
 
 def get_crypto_key(keys_list, length, algo=None):
@@ -168,12 +229,13 @@ def verify_and_encrypt():
     except Exception as e:
         return jsonify({"success": False, "message": f"Encryption error: {str(e)}"}), 500
 
-    share_token = str(uuid.uuid4())[:8]
+    share_token = str(uuid.uuid4())[:12]
     encrypted_shares[share_token] = {
         'owner_contact': contact_val,
         'encrypted_data': encrypted_data,
         'keys': keys,
-        'algo': algo
+        'algo': algo,
+        'file_name': data.get('file_name', 'Zentry Secure Content')
     }
     return jsonify({"success": True, "encrypted_data": encrypted_data, "share_id": share_token})
 
@@ -219,12 +281,13 @@ def encrypt_direct():
     except Exception as e:
         return jsonify({"success": False, "message": f"Encryption error: {str(e)}"}), 500
 
-    share_token = str(uuid.uuid4())[:8]
+    share_token = str(uuid.uuid4())[:12]
     encrypted_shares[share_token] = {
         'owner_contact': contact_val,
         'encrypted_data': encrypted_data,
         'keys': keys,
-        'algo': algo
+        'algo': algo,
+        'file_name': data.get('file_name', 'Zentry Secure Content')
     }
     return jsonify({"success": True, "encrypted_data": encrypted_data, "share_id": share_token})
 
@@ -248,7 +311,8 @@ def request_decrypt_otp():
     
     # Send to OWNER (User 1)
     print(f"DEBUG: Attempting to send OTP {otp} to {owner_contact}")
-    mock_send_email(owner_contact, otp, purpose='share-access')
+    tool_name = share_info.get('file_name', 'Zentry Vault Tool')
+    mock_send_email(owner_contact, otp, purpose='share-access', tool_name=tool_name)
     return jsonify({"success": True, "message": f"6-digit OTP sent to {owner_contact} G-mail account."})
 
 @app.route('/api/share-info/<share_id>', methods=['GET'])

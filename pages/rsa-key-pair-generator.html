@@ -6,13 +6,14 @@
     <title>RSA key pair generator - Zentry Vault</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/forge/1.3.1/forge.min.js"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
                         background: '#1a1a1a', 
-                        panelBg: '#2a2a2a', 
+                        panelBg: '#262626', 
                         inputBg: '#333333', 
                         accent: '#4f8ef5',
                     },
@@ -45,43 +46,49 @@
         ::-webkit-scrollbar-thumb { background: #444; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .header-title { font-weight: normal; font-size: 2.25rem; line-height: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 1rem; padding-bottom: 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem; margin-top: 1rem; width: 100%; border-bottom: none; }
+        .header-title { font-weight: 500; font-size: 2.5rem; letter-spacing: -0.025em; display: inline-flex; align-items: center; justify-content: center; gap: 0.75rem; margin-bottom: 0.5rem; }
         
-        .cyber-textarea {
+        .key-box {
+            background-color: #262626;
+            border-radius: 8px;
+            padding: 1.5rem;
+            position: relative;
+            min-height: 250px;
+        }
+        .key-textarea {
             width: 100%;
-            background-color: #333333;
+            background: transparent;
             color: #d4d4d4;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            padding: 12px;
+            border: none;
+            font-family: 'ui-monospace', monospace;
             font-size: 13px;
-            font-family: inherit; 
+            resize: none;
             outline: none;
-            resize: vertical;
-            min-height: 120px;
+            height: 200px;
+            line-height: 1.6;
+        }
+        .copy-btn {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.5rem;
+            border-radius: 6px;
+            color: #a1a1aa;
             transition: all 0.2s;
         }
-        .cyber-textarea:focus {
-            border-color: #555;
-            background-color: #3a3a3a;
+        .copy-btn:hover {
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
         }
-        .cyber-label {
-            display: block;
-            font-size: 13px;
-            color: #e5e5e5;
-            margin-bottom: 6px;
-            margin-top: 16px;
-        }
-        .cyber-label:first-child { margin-top: 0; }
-        .resize-icon { position: absolute; bottom: 8px; right: 8px; pointer-events: none; color: #737373; opacity: 0.5; }
     </style>
-    
 </head>
 <body class="bg-background text-white antialiased flex flex-col min-h-screen">
     <!-- Navbar -->
     <header class="fixed top-0 left-0 w-full z-50 glass-nav transition-all duration-300">
         <div class="w-full px-8 xl:px-16 py-5 flex justify-between items-center">
-            <div class="flex items-center gap-3 text-2xl font-bold cursor-pointer hover:transform hover:-translate-y-[1px] transition-transform">
+            <div role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')window.location.href='../index.html'" onclick="window.location.href='../index.html'" class="flex items-center gap-3 text-2xl font-bold cursor-pointer hover:transform hover:-translate-y-[1px] transition-transform focus:outline-none">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" class="drop-shadow-lg">
                     <path d="M12 2L2 7l10 5 10-5-10-5z" fill="white"/>
                     <path d="M2 17l10 5 10-5M2 12l10 5 10-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -105,54 +112,60 @@
     </header>
 
     <!-- Main Section -->
-    <main class="flex-grow pt-32 pb-20 px-6 md:px-12 xl:px-32 max-w-[1400px] mx-auto w-full">
-        <!-- Back Button inline -->
-        <div class="max-w-4xl mx-auto flex items-center mb-2">
-            <a href="dashboard.html" class="text-gray-400 hover:text-white flex items-center gap-2 text-sm transition-colors w-fit font-semibold">
+    <main class="flex-grow pt-32 pb-20 px-6 md:px-12 xl:px-32 max-w-[1200px] mx-auto w-full text-center">
+        <!-- Back Link -->
+        <div class="flex items-center mb-10">
+            <a href="dashboard.html" class="text-gray-500 hover:text-white flex items-center gap-2 text-sm transition-colors font-medium">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 Back to Dashboard
             </a>
         </div>
-        
-        <!-- Header text area -->
-        <div class="max-w-4xl mx-auto flex flex-col items-center text-center border-b border-white/10 mb-8 pb-4">
-            <div class="header-title text-gray-200 justify-center">
-                <span>RSA key pair generator</span>
-                <div onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors">
-                    <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+
+        <div class="header-title group justify-center">
+            <span>RSA key pair generator</span>
+            <div role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' ')toggleFavorite(this)" onclick="toggleFavorite(this)" class="w-8 h-8 rounded-full border border-gray-700/50 flex items-center justify-center cursor-pointer hover:bg-white/5 transition-colors focus:outline-none">
+                <svg class="w-4 h-4 text-gray-500 hover:text-red-500 transition-colors" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+            </div>
+        </div>
+        <p class="text-gray-400 text-sm mb-12">Generate a new random RSA private and public pem certificate key pair.</p>
+
+        <!-- Controls -->
+        <div class="flex flex-wrap items-center justify-center gap-4 mb-12">
+            <div class="flex items-center bg-[#262626] rounded-md px-4 py-2 border border-white/5">
+                <span class="text-xs text-gray-500 mr-4 font-medium">Bits :</span>
+                <input type="number" id="bits-input" value="2048" step="8" class="bg-transparent border-none text-sm w-16 text-center focus:ring-0 outline-none">
+                <div class="flex flex-col ml-2 border-l border-white/10 pl-2">
+                    <button onclick="adjustBits(8)" class="text-gray-500 hover:text-white text-[10px]">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"></path></svg>
+                    </button>
+                    <button onclick="adjustBits(-8)" class="text-gray-500 hover:text-white text-[10px] mt-1">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M20 12H4"></path></svg>
+                    </button>
                 </div>
             </div>
-            <p class="text-sm text-gray-400 leading-relaxed max-w-2xl mb-8">
-                Generate a new random RSA private and public pem certificate key pair.
-            </p>
+            <button onclick="generateKeys()" id="generate-btn" class="bg-[#262626] hover:bg-[#333] text-white px-6 py-2 rounded-md border border-white/5 text-sm font-medium transition-all flex items-center gap-2">
+                Refresh key-pair
+            </button>
         </div>
 
-        <div class="grid grid-cols-1 w-full max-w-4xl mx-auto items-start">
-            <!-- NATIVE UI PANEL (Old Tools Theme) -->
-            <div class="bg-panelBg rounded-md p-6 border border-transparent w-full">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    
-                    <div class="md:col-span-1">
-                        <label for="input-data" class="cyber-label">Your Input:</label>
-                        <div class="relative mb-2">
-                            <textarea id="input-data" class="cyber-textarea font-mono block" placeholder="Provide input..." spellcheck="false"></textarea>
-                            <svg class="resize-icon w-3 h-3" viewBox="0 0 10 10" fill="currentColor"><path d="M10 0v10H0L10 0z" opacity="0.5"/></svg>
-                        </div>
-                    </div>
-                    
-                    <div class="md:col-span-1 flex flex-col justify-start">
-                        <label for="output-data" class="cyber-label text-blue-400 font-semibold">Output Result:</label>
-                        <div class="relative mb-2 w-full">
-                            <textarea id="output-data" class="cyber-textarea font-mono text-gray-200 w-full" placeholder="Result will appear here..." spellcheck="false" readonly></textarea>
-                            <button onclick="copyResult()" class="absolute top-2 right-2 bg-blue-600/30 hover:bg-blue-600 text-blue-300 hover:text-white text-[10px] font-bold px-3 py-1 rounded transition-all">COPY</button>
-                            <!-- QR specific div -->
-                            <div id="qr-container" class="mt-4 flex justify-center w-full bg-white p-4 rounded" style="display:none;"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="md:col-span-2 mt-4">
-                        <button onclick="executeAction()" class="w-full bg-[#10b981] hover:bg-emerald-600 text-white font-bold py-3 rounded-md transition-colors shadow-lg uppercase tracking-wide">Execute Tool</button>
-                    </div>
+        <!-- Key Pairs Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left">
+            <div>
+                <h3 class="text-sm font-semibold mb-4 text-gray-300">Public key</h3>
+                <div class="key-box group">
+                    <button onclick="copyToClipboard('public-key', this)" class="copy-btn opacity-0 group-hover:opacity-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    </button>
+                    <textarea id="public-key" class="key-textarea" readonly placeholder="Generating public key..."></textarea>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-sm font-semibold mb-4 text-gray-300">Private key</h3>
+                <div class="key-box group">
+                    <button onclick="copyToClipboard('private-key', this)" class="copy-btn opacity-0 group-hover:opacity-100">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path></svg>
+                    </button>
+                    <textarea id="private-key" class="key-textarea" readonly placeholder="Generating private key..."></textarea>
                 </div>
             </div>
         </div>
@@ -221,6 +234,7 @@
         </div>
     </footer>
 
+
     <script>
         function toggleFavorite(element) {
             const heartSvg = element.querySelector('svg');
@@ -233,44 +247,71 @@
             }
         }
 
+        function adjustBits(delta) {
+            const input = document.getElementById('bits-input');
+            const current = Number.parseInt(input.value, 10);
+            if (!Number.isNaN(current)) {
+                input.value = Math.max(512, Math.min(4096, current + delta));
+                generateKeys();
+            }
+        }
+
+        async function generateKeys() {
+            const bitsInput = document.getElementById('bits-input');
+            const bits = Number.parseInt(bitsInput.value, 10);
+            if (Number.isNaN(bits)) return;
+            
+            const genBtn = document.getElementById('generate-btn');
+            const publicEl = document.getElementById('public-key');
+            const privateEl = document.getElementById('private-key');
+
+            genBtn.innerText = "Generating...";
+            genBtn.disabled = true;
+            publicEl.value = "Processing request...";
+            privateEl.value = "Calculating primes...";
+
+            // Use forge for RSA generation in browser
+            setTimeout(() => {
+                try {
+                    const pair = forge.pki.rsa.generateKeyPair(bits);
+                    const publicKeyPem = forge.pki.publicKeyToPem(pair.publicKey);
+                    const privateKeyPem = forge.pki.privateKeyToPem(pair.privateKey);
+
+                    publicEl.value = publicKeyPem;
+                    privateEl.value = privateKeyPem;
+                    
+                    genBtn.innerText = "Refresh key-pair";
+                    genBtn.disabled = false;
+                } catch (e) {
+                    publicEl.value = "Error generating keys: " + e.message;
+                    privateEl.value = "Error.";
+                    genBtn.innerText = "Refresh key-pair";
+                    genBtn.disabled = false;
+                }
+            }, 50); // slight delay to allow UI refresh
+        }
+
+        function copyToClipboard(id, btn) {
+            const textarea = document.getElementById(id);
+            if (!textarea.value || textarea.value.includes("Generating")) return;
+            
+            navigator.clipboard.writeText(textarea.value);
+            const originalIcon = btn.innerHTML;
+            btn.innerHTML = '<svg class="w-4 h-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            setTimeout(() => { btn.innerHTML = originalIcon; }, 2000);
+        }
+
         function logout() {
             localStorage.removeItem('signedIn');
-            window.location.href = '../index.html';
+            globalThis.location.href = "../index.html";
         }
 
-        function copyResult() {
-            const val = document.getElementById('output-data').value;
-            if (val) {
-                navigator.clipboard.writeText(val);
-                alert("Copied to clipboard!");
-            }
-        }
-
-        function executeAction() {
-            const input = document.getElementById('input-data').value;
-            const outputEl = document.getElementById('output-data');
-            
-            if (document.getElementById('qr-container')) {
-                document.getElementById('qr-container').style.display = 'none';
-            }
-            
-            if (!input) {
-                outputEl.value = "Error: Input is required.";
-                return;
-            }
-
-            try {
-                let result = '';
-                result = 'Function executed: ' + input;
-                
-                if (document.getElementById('qr-container') && document.getElementById('qr-container').innerHTML !== "") {
-                    document.getElementById('qr-container').style.display = 'flex';
-                }
-                outputEl.value = result;
-            } catch (e) {
-                outputEl.value = "An error occurred during execution:\n" + e.message;
-            }
-        }
+        // Initialize
+        window.onload = () => {
+            const isSignedIn = localStorage.getItem('signedIn') === 'true';
+            if (!isSignedIn) globalThis.location.href = "../index.html";
+            generateKeys();
+        };
     </script>
 </body>
 </html>
